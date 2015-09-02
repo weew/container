@@ -235,7 +235,7 @@ Check if the container has a value:
 $container = new Container();
 $container->set('foo', 'bar');
 
-// true
+// will return true
 $container->has('foo');
 ```
 
@@ -246,6 +246,6 @@ $container = new Container();
 $container->set('foo', 'bar');
 $container->remove('foo');
 
-// false
+// will return false
 $container->has('foo');
 ```
