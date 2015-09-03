@@ -37,35 +37,6 @@ class Reflector implements IReflector {
 
     /**
      * @param IContainer $container
-     * @param ReflectionClass $class
-     * @param array $args
-     *
-     * @return object
-     * @throws DebugInfoException
-     */
-    public function resolveConstructor(IContainer $container, ReflectionClass $class, array $args = []) {
-        $constructor = $class->getConstructor();
-
-        if ($constructor !== null) {
-            try {
-                $arguments = $this->buildArgumentsFromParameters(
-                    $container, $constructor->getParameters(), $args
-                );
-            } catch (DebugInfoException $ex) {
-                $ex->setClassName($class->getName());
-                $ex->setMethodName($constructor->getName());
-
-                throw $ex;
-            }
-
-            return $class->newInstanceArgs($arguments);
-        }
-
-        return $class->newInstance();
-    }
-
-    /**
-     * @param IContainer $container
      * @param $instance
      * @param $methodName
      * @param array $args
@@ -119,6 +90,35 @@ class Reflector implements IReflector {
         }
 
         return $function->invokeArgs($arguments);
+    }
+
+    /**
+     * @param IContainer $container
+     * @param ReflectionClass $class
+     * @param array $args
+     *
+     * @return object
+     * @throws DebugInfoException
+     */
+    protected function resolveConstructor(IContainer $container, ReflectionClass $class, array $args = []) {
+        $constructor = $class->getConstructor();
+
+        if ($constructor !== null) {
+            try {
+                $arguments = $this->buildArgumentsFromParameters(
+                    $container, $constructor->getParameters(), $args
+                );
+            } catch (DebugInfoException $ex) {
+                $ex->setClassName($class->getName());
+                $ex->setMethodName($constructor->getName());
+
+                throw $ex;
+            }
+
+            return $class->newInstanceArgs($arguments);
+        }
+
+        return $class->newInstance();
     }
 
     /**

@@ -1,8 +1,6 @@
 <?php
 namespace Weew\Container;
 
-use ReflectionClass;
-
 interface IReflector {
     /**
      * @param IContainer $container
@@ -12,15 +10,6 @@ interface IReflector {
      * @return object
      */
     function resolveClass(IContainer $container, $className, array $args = []);
-
-    /**
-     * @param IContainer $container
-     * @param ReflectionClass $class
-     * @param array $args
-     *
-     * @return object
-     */
-    function resolveConstructor(IContainer $container, ReflectionClass $class, array $args = []);
 
     /**
      * @param IContainer $container
