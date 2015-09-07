@@ -80,9 +80,18 @@ class Container implements IContainer {
 
     /**
      * @param $id
+     * @param null $abstract
+     *
+     * @return $this
      */
-    public function share($id) {
+    public function share($id, $abstract = null) {
+        if ($abstract !== null) {
+            $this->set($id, $abstract);
+        }
+
         $this->shared[$id] = true;
+
+        return $this;
     }
 
     /**

@@ -187,6 +187,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase {
         $concrete = $container->get(NoConstructor::class);
         $concrete2 = $container->get(NoConstructor::class);
 
+        $this->assertTrue($concrete instanceof NoConstructor);
         $this->assertFalse($concrete === $concrete2);
 
         $container->share(NoConstructor::class);
@@ -194,6 +195,26 @@ class ContainerTest extends PHPUnit_Framework_TestCase {
         $concrete = $container->get(NoConstructor::class);
         $concrete2 = $container->get(NoConstructor::class);
 
+        $this->assertTrue($concrete instanceof NoConstructor);
+        $this->assertTrue($concrete === $concrete2);
+    }
+
+    public function test_share_with_type_hint() {
+        $container = new Container();
+
+        $container->set(IImplementation::class, FooImplementation::class);
+        $concrete = $container->get(IImplementation::class);
+        $concrete2 = $container->get(IImplementation::class);
+
+        $this->assertTrue($concrete instanceof IImplementation);
+        $this->assertFalse($concrete === $concrete2);
+
+        $container->share(IImplementation::class, FooImplementation::class);
+
+        $concrete = $container->get(IImplementation::class);
+        $concrete2 = $container->get(IImplementation::class);
+
+        $this->assertTrue($concrete instanceof IImplementation);
         $this->assertTrue($concrete === $concrete2);
     }
 
