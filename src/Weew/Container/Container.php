@@ -196,7 +196,6 @@ class Container implements IContainer {
     protected function getClass(ClassDefinition $definition, array $args = []) {
         $abstract = $definition->getValue();
         $class = $definition->getId();
-        $instance = null;
 
         if (is_callable($abstract)) {
             $instance = $this->call($abstract, $args);
@@ -211,16 +210,9 @@ class Container implements IContainer {
                 ->resolveClass($this, $abstract, $args);
         }
 
-        if ($instance instanceof $class) {
-            return $instance;
-        }
+        $this->matchClassType($class, $instance);
 
-        throw new TypeMismatchException(
-            s(
-                'Container expects an implementation of type %s, %s given.',
-                $class, get_type($instance)
-            )
-        );
+        return $instance;
     }
 
     /**
@@ -243,16 +235,9 @@ class Container implements IContainer {
             $instance = $this->getClass(new ClassDefinition($abstract, null), $args);
         }
 
-        if ($instance instanceof $interface) {
-            return $instance;
-        }
+        $this->matchClassType($interface, $instance);
 
-        throw new TypeMismatchException(
-            s(
-                'Container expects an implementation of type %s, %s given.',
-                $interface, get_type($instance)
-            )
-        );
+        return $instance;
     }
 
     /**
@@ -271,5 +256,22 @@ class Container implements IContainer {
      */
     protected function setDefinition(IDefinition $definition) {
         $this->definitions[$definition->getId()] = $definition;
+    }
+
+    /**
+     * @param $class
+     * @param $instance
+     *
+     * @throws TypeMismatchException
+     */
+    protected function matchClassType($class, $instance) {
+        if ( ! $instance instanceof $class) {
+            throw new TypeMismatchException(
+                s(
+                    'Container expects an implementation of type %s, %s given.',
+                    $class, get_type($instance)
+                )
+            );
+        }
     }
 }

@@ -5,6 +5,7 @@ namespace Weew\Container;
 use Exception;
 use ReflectionClass;
 use ReflectionFunction;
+use ReflectionMethod;
 use ReflectionParameter;
 use Weew\Container\Exceptions\InterfaceImplementationNotFoundException;
 use Weew\Container\Exceptions\UnresolveableArgumentException;
@@ -25,6 +26,28 @@ class Reflector implements IReflector {
 
     /**
      * @param IContainer $container
+     * @param $className
+     * @param array $args
+     *
+     * @return object
+     * @throws Exception
+     * @throws UnresolveableArgumentException
+     */
+    protected function resolveConstructor(IContainer $container, $className, array $args = []) {
+        $class = new ReflectionClass($className);
+        $constructor = $class->getConstructor();
+
+        if ($constructor !== null) {
+            $arguments = $this->resolveMethodArguments($container, $class, $constructor, $args);
+
+            return $class->newInstanceArgs($arguments);
+        }
+
+        return $class->newInstance();
+    }
+
+    /**
+     * @param IContainer $container
      * @param $instance
      * @param $methodName
      * @param array $args
@@ -36,9 +59,33 @@ class Reflector implements IReflector {
     public function resolveMethod(IContainer $container, $instance, $methodName, array $args = []) {
         $class = new ReflectionClass($instance);
         $method = $class->getMethod($methodName);
+        $arguments = $this->resolveMethodArguments($container, $class, $method, $args);
 
+        if ($method->isStatic()) {
+            $instance = null;
+        }
+
+        return $method->invokeArgs($instance, $arguments);
+    }
+
+    /**
+     * @param IContainer $container
+     * @param ReflectionClass $class
+     * @param ReflectionMethod $method
+     * @param array $args
+     *
+     * @return array
+     * @throws Exception
+     * @throws UnresolveableArgumentException
+     */
+    protected function resolveMethodArguments(
+        IContainer $container,
+        ReflectionClass $class,
+        ReflectionMethod $method,
+        array $args = []
+    ) {
         try {
-            $arguments = $this->buildArgumentsFromParameters(
+            return $this->buildArgumentsFromParameters(
                 $container, $method->getParameters(), $args
             );
         } catch (UnresolveableArgumentException $ex) {
@@ -47,12 +94,6 @@ class Reflector implements IReflector {
 
             throw $ex;
         }
-
-        if ($method->isStatic()) {
-            $instance = null;
-        }
-
-        return $method->invokeArgs($instance, $arguments);
     }
 
     /**
@@ -78,37 +119,6 @@ class Reflector implements IReflector {
         }
 
         return $function->invokeArgs($arguments);
-    }
-
-    /**
-     * @param IContainer $container
-     * @param $className
-     * @param array $args
-     *
-     * @return object
-     * @throws Exception
-     * @throws UnresolveableArgumentException
-     */
-    protected function resolveConstructor(IContainer $container, $className, array $args = []) {
-        $class = new ReflectionClass($className);
-        $constructor = $class->getConstructor();
-
-        if ($constructor !== null) {
-            try {
-                $arguments = $this->buildArgumentsFromParameters(
-                    $container, $constructor->getParameters(), $args
-                );
-            } catch (UnresolveableArgumentException $ex) {
-                $ex->setClassName($class->getName());
-                $ex->setMethodName($constructor->getName());
-
-                throw $ex;
-            }
-
-            return $class->newInstanceArgs($arguments);
-        }
-
-        return $class->newInstance();
     }
 
     /**
@@ -147,25 +157,13 @@ class Reflector implements IReflector {
      */
     protected function getParameterValue(IContainer $container, ReflectionParameter $parameter, array $args) {
         $parameterName = $parameter->getName();
-        $parameterClass = $parameter->getClass();
 
         if (array_has($args, $parameterName)) {
             return $args[$parameterName];
         }
 
-        if ($parameterClass !== null) {
-            try {
-                return $container->get($parameterClass->getName());
-            } catch (Exception $ex) {
-                $ignoreException = (
-                    $ex instanceof ValueNotFoundException ||
-                    $ex instanceof InterfaceImplementationNotFoundException
-                );
-
-                if ( ! ($ignoreException && $parameter->isDefaultValueAvailable())) {
-                    throw $ex;
-                }
-            }
+        if ($parameter->getClass() !== null) {
+            return $this->getParameterFromContainer($container, $parameter);
         }
 
         if ($parameter->isDefaultValueAvailable()) {
@@ -175,5 +173,28 @@ class Reflector implements IReflector {
         throw new UnresolveableArgumentException(
             s('Value not found for argument %s.', $parameterName)
         );
+    }
+
+    /**
+     * @param IContainer $container
+     * @param ReflectionParameter $parameter
+     *
+     * @return mixed
+     * @throws Exception
+     * @throws ValueNotFoundException
+     */
+    protected function getParameterFromContainer(IContainer $container, ReflectionParameter $parameter) {
+        try {
+            return $container->get($parameter->getClass()->getName());
+        } catch (Exception $ex) {
+            $ignoreException = (
+                $ex instanceof ValueNotFoundException ||
+                $ex instanceof InterfaceImplementationNotFoundException
+            );
+
+            if ( ! ($ignoreException && $parameter->isDefaultValueAvailable())) {
+                throw $ex;
+            }
+        }
     }
 }
