@@ -182,6 +182,21 @@ class ContainerTest extends PHPUnit_Framework_TestCase {
         $this->assertFalse(array_has($container, 'bar'));
     }
 
+    public function test_share() {
+        $container = new Container();
+        $concrete = $container->get(NoConstructor::class);
+        $concrete2 = $container->get(NoConstructor::class);
+
+        $this->assertFalse($concrete === $concrete2);
+
+        $container->share(NoConstructor::class);
+
+        $concrete = $container->get(NoConstructor::class);
+        $concrete2 = $container->get(NoConstructor::class);
+
+        $this->assertTrue($concrete === $concrete2);
+    }
+
     public function test_complete_functionality() {
         $container = new Container();
 

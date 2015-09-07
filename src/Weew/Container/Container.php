@@ -17,6 +17,11 @@ class Container implements IContainer {
     protected $container = [];
 
     /**
+     * @var array
+     */
+    protected $shared = [];
+
+    /**
      * @param IReflector|null $reflector
      */
     public function __construct(IReflector $reflector = null) {
@@ -36,19 +41,25 @@ class Container implements IContainer {
      * @throws ImplementationNotFoundException
      */
     public function get($id, array $args = []) {
+        $concrete = null;
+
         if (array_has($this->container, $id)) {
             $item = $this->container[$id];
 
             if (is_callable($item)) {
-                return $this->call($item, $args);
+                $concrete = $this->call($item, $args);
             } else if (is_string($item) && class_exists($item)) {
-                return $this->get($item, $args);
+                $concrete = $this->get($item, $args);
             } else {
-                return $item;
+                $concrete = $item;
             }
+        } else {
+            $concrete = $this->getClass($id, $args);
         }
 
-        return $this->getClass($id, $args);
+        $this->shareInstance($id, $concrete);
+
+        return $concrete;
     }
 
     /**
@@ -65,6 +76,13 @@ class Container implements IContainer {
         }
 
         return $this;
+    }
+
+    /**
+     * @param $id
+     */
+    public function share($id) {
+        $this->shared[$id] = true;
     }
 
     /**
@@ -154,6 +172,16 @@ class Container implements IContainer {
     protected function registerContainerInstance() {
         $this->set(static::class, $this);
         $this->set(IContainer::class, $this);
+    }
+
+    /**
+     * @param $id
+     * @param $instance
+     */
+    protected function shareInstance($id, $instance) {
+        if (array_has($this->shared, $id)) {
+            $this->set($id, $instance);
+        }
     }
 
     /**
