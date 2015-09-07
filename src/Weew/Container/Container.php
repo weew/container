@@ -16,6 +16,11 @@ class Container implements IContainer {
     protected $definitions = [];
 
     /**
+     * @var IReflector
+     */
+    protected $reflector;
+
+    /**
      * @param IReflector|null $reflector
      */
     public function __construct(IReflector $reflector = null) {
