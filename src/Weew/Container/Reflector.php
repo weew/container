@@ -157,7 +157,7 @@ class Reflector implements IReflector {
         $parameterName = $parameter->getName();
         $parameterClass = $parameter->getClass();
 
-        if (isset($args[$parameterName])) {
+        if (array_has($args, $parameterName)) {
             return $args[$parameterName];
         }
 

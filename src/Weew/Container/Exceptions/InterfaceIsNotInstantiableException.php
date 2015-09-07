@@ -38,8 +38,8 @@ class InterfaceIsNotInstantiableException extends Exception {
      * Build exception message.
      */
     protected function buildMessage() {
-        $this->message = sprintf(
-            'Can not instantiate interface %s', $this->getInterface()
+        $this->message = s(
+            'Can not instantiate interface %s.', $this->getInterface()
         );
     }
 }

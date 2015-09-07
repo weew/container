@@ -17,8 +17,8 @@ class MissingArgumentException extends DebugInfoException {
             $callable = $functionName;
         }
 
-        $this->message = sprintf(
-            'Missing argument %s for %s',
+        $this->message = s(
+            'Missing argument %s for %s.',
             $this->getArgumentIndex(),
             $callable
         );

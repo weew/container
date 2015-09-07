@@ -52,7 +52,7 @@ class ReflectorTest extends PHPUnit_Framework_TestCase {
         $reflector = new Reflector();
         $this->setExpectedException(
             MissingArgumentException::class,
-            'Missing argument 0 for Tests\Weew\Container\Stubs\ComplexConstructor::__construct'
+            'Missing argument 0 for Tests\Weew\Container\Stubs\ComplexConstructor::__construct.'
         );
         $concrete = $reflector->resolveClass($container, ComplexConstructor::class);
         $this->assertTrue($concrete instanceof ComplexConstructor);

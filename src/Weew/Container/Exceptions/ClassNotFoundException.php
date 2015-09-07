@@ -35,6 +35,6 @@ class ClassNotFoundException extends Exception {
      * Build exception message.
      */
     public function buildMessage() {
-        $this->message = sprintf('Class not found %s', $this->getClassName());
+        $this->message = s('Class not found %s.', $this->getClassName());
     }
 }

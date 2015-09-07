@@ -36,7 +36,7 @@ class Container implements IContainer {
      * @throws ImplementationNotFoundException
      */
     public function get($id, array $args = []) {
-        if (isset($this->container[$id])) {
+        if (array_has($this->container, $id)) {
             $item = $this->container[$id];
 
             if (is_callable($item)) {
@@ -73,7 +73,7 @@ class Container implements IContainer {
      * @return bool
      */
     public function has($id) {
-        return isset($this->container[$id]);
+        return array_has($this->container, $id);
     }
 
     /**
@@ -143,7 +143,7 @@ class Container implements IContainer {
                 ->resolveClass($this, $class, $args);
         } catch (InterfaceIsNotInstantiableException $ex) {
             throw new ImplementationNotFoundException(
-                sprintf('No implementation found for interface %s', $ex->getInterface())
+                s('No implementation found for interface %s.', $ex->getInterface())
             );
         }
     }
@@ -162,7 +162,7 @@ class Container implements IContainer {
      * @return bool
      */
     public function offsetExists($offset) {
-        return isset($this->container[$offset]);
+        return array_has($this->container, $offset);
     }
 
     /**
@@ -171,7 +171,7 @@ class Container implements IContainer {
      * @return mixed
      */
     public function offsetGet($offset) {
-        return $this->container[$offset];
+        return array_get($this->container, $offset);
     }
 
     /**
@@ -186,7 +186,7 @@ class Container implements IContainer {
      * @param $offset
      */
     public function offsetUnset($offset) {
-        unset($this->container[$offset]);
+        array_remove($this->container, $offset);
     }
 
     /**

@@ -13,7 +13,6 @@ use Tests\Weew\Container\Stubs\NoConstructor;
 use Tests\Weew\Container\Stubs\SharedClass;
 use Tests\Weew\Container\Stubs\SharedConstructor;
 use Weew\Container\Container;
-use Weew\Container\Exceptions\ClassNotFoundException;
 use Weew\Container\Exceptions\ImplementationNotFoundException;
 use Weew\Container\IContainer;
 
@@ -47,7 +46,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase {
     public function test_call() {
         $container = new Container();
         $test = $this;
-        $container->call(function(NoConstructor $cls, $foo = 'bar') use ($test) {
+        $container->call(function (NoConstructor $cls, $foo = 'bar') use ($test) {
             $test->assertTrue($cls instanceof NoConstructor);
             $test->assertEquals('bar', $foo);
         });
@@ -69,7 +68,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase {
 
     public function test_factory() {
         $container = new Container();
-        $container->set('foo', function(SharedClass $shared) {
+        $container->set('foo', function (SharedClass $shared) {
             return $shared->x + 2;
         });
         $result = $container->get('foo');
@@ -79,7 +78,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase {
     public function test_get_interface_with_factory() {
         $container = new Container();
 
-        $container->set(IImplementation::class, function() {
+        $container->set(IImplementation::class, function () {
             $implementation = new BarImplementation();
             $implementation->x = 99;
 
@@ -94,7 +93,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase {
     public function test_get_interface_with_implementation_factory() {
         $container = new Container();
 
-        $container->set(BarImplementation::class, function() {
+        $container->set(BarImplementation::class, function () {
             $implementation = new BarImplementation();
             $implementation->x = 22;
 
@@ -155,6 +154,22 @@ class ContainerTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('bar', $c->get('foo'));
     }
 
+    public function test_array_access_and_count() {
+        $container = new Container();
+        $count = count($container);
+
+        $this->assertFalse(isset($container['foo']));
+        $container->set('foo', 'bar');
+        $this->assertEquals('bar', $container['foo']);
+        $container['bar'] = 'baz';
+        $this->assertEquals('baz', $container->get('bar'));
+
+        $this->assertEquals($count + 2, count($container));
+
+        unset($container['bar']);
+        $this->assertFalse(array_has($container, 'bar'));
+    }
+
     public function test_complete_functionality() {
         $container = new Container();
 
@@ -174,7 +189,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase {
             $container->get(NoConstructor::class) === $instance
         );
 
-        $container->set(SharedClass::class, function() {
+        $container->set(SharedClass::class, function () {
             $instance = new SharedClass();
             $instance->x = 99;
 
@@ -188,7 +203,7 @@ class ContainerTest extends PHPUnit_Framework_TestCase {
             $container->get(IImplementation::class) instanceof BarImplementation
         );
 
-        $container->set(IImplementation::class, function(IContainer $container) {
+        $container->set(IImplementation::class, function (IContainer $container) {
             $instance = new FooImplementation();
             $container->set(IImplementation::class, $instance);
 
@@ -202,25 +217,10 @@ class ContainerTest extends PHPUnit_Framework_TestCase {
             $container->get(IImplementation::class) === $instance
         );
 
+//        todo:
 //        get(function)
 //        get(closure)
 //        get(instance, method)
 //        get(class, method)
-    }
-
-    public function test_array_access_and_count() {
-        $container = new Container();
-        $count = count($container);
-
-        $this->assertFalse(isset($container['foo']));
-        $container->set('foo', 'bar');
-        $this->assertEquals('bar', $container['foo']);
-        $container['bar'] = 'baz';
-        $this->assertEquals('baz', $container->get('bar'));
-
-        $this->assertEquals($count + 2, count($container));
-
-        unset($container['bar']);
-        $this->assertFalse(isset($container['bar']));
     }
 }
