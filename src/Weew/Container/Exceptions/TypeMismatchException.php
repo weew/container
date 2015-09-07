@@ -4,4 +4,4 @@ namespace Weew\Container\Exceptions;
 
 use Exception;
 
-class ImplementationNotFoundException extends Exception {}
+class TypeMismatchException extends Exception {}

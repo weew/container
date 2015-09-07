@@ -7,7 +7,7 @@ interface IReflector {
      * @param $className
      * @param array $args
      *
-     * @return object
+     * @return mixed
      */
     function resolveClass(IContainer $container, $className, array $args = []);
 

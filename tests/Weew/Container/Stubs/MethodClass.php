@@ -3,14 +3,27 @@
 namespace Tests\Weew\Container\Stubs;
 
 class MethodClass {
-    private $z = 5;
-    private static $w = 5;
-
-    public function foo($y, SharedClass $shared) {
-        return $shared->x + $y + $this->z;
+    public function method(array $array) {
+        return array_pop($array);
     }
 
-    public static function bar($y = 2, SharedClass $shared) {
-        return $shared->x + $y + self::$w;
+    public function complexMethod(SimpleClass $instance, array $array) {
+        return array_pop($array);
+    }
+
+    public function complexNullableMethod(InterfaceClass $instance = null, array $array, $foo = 1) {
+        return $foo;
+    }
+
+    public static function staticMethod(array $array) {
+        return array_pop($array);
+    }
+
+    public static function complexStaticMethod(SimpleClass $instance, array $array) {
+        return array_pop($array);
+    }
+
+    public static function complexNullableStaticMethod(InterfaceClass $instance = null, array $array, $foo = 1) {
+        return $foo;
     }
 }

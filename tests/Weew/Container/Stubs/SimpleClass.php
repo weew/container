@@ -2,6 +2,4 @@
 
 namespace Tests\Weew\Container\Stubs;
 
-class SharedClass {
-    public $x = 1;
-}
+class SimpleClass {}

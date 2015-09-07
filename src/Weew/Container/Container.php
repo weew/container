@@ -2,24 +2,18 @@
 
 namespace Weew\Container;
 
-use Weew\Container\Exceptions\ImplementationNotFoundException;
-use Weew\Container\Exceptions\InterfaceIsNotInstantiableException;
+use Weew\Container\Definitions\ClassDefinition;
+use Weew\Container\Definitions\InterfaceDefinition;
+use Weew\Container\Definitions\ValueDefinition;
+use Weew\Container\Exceptions\InterfaceImplementationNotFoundException;
+use Weew\Container\Exceptions\TypeMismatchException;
+use Weew\Container\Exceptions\ValueNotFoundException;
 
 class Container implements IContainer {
     /**
-     * @var IReflector
+     * @var IDefinition[]
      */
-    protected $reflector;
-
-    /**
-     * @var array
-     */
-    protected $container = [];
-
-    /**
-     * @var array
-     */
-    protected $shared = [];
+    protected $definitions = [];
 
     /**
      * @param IReflector|null $reflector
@@ -30,85 +24,67 @@ class Container implements IContainer {
         }
 
         $this->reflector = $reflector;
-        $this->registerContainerInstance();
+        $this->shareContainerInstance();
     }
 
     /**
-     * @param $id
+     * @param string $id
      * @param array $args
      *
-     * @return mixed|object
-     * @throws ImplementationNotFoundException
+     * @return mixed
+     * @throws InterfaceImplementationNotFoundException
+     * @throws ValueNotFoundException
      */
     public function get($id, array $args = []) {
-        $concrete = null;
+        $value = null;
 
-        if (array_has($this->container, $id)) {
-            $item = $this->container[$id];
-
-            if (is_callable($item)) {
-                $concrete = $this->call($item, $args);
-            } else if (is_string($item) && class_exists($item)) {
-                $concrete = $this->get($item, $args);
-            } else {
-                $concrete = $item;
-            }
-        } else {
-            $concrete = $this->getClass($id, $args);
+        if (array_has($this->definitions, $id)) {
+            $definition = array_get($this->definitions, $id);
+            $value = $this->resolveDefinition($definition, $args);
         }
 
-        $this->shareInstance($id, $concrete);
+        if ($value === null) {
+            return $this->resolveWithoutDefinition($id, $args);
+        }
 
-        return $concrete;
+        return $value;
     }
 
     /**
-     * @param $id
-     * @param $abstract
+     * @param string $id
+     * @param $value
      *
-     * @return $this
+     * @return IDefinition
      */
-    public function set($id, $abstract = null) {
-        if ($abstract === null && is_object($id)) {
-            $this->container[get_class($id)] = $id;
+    public function set($id, $value) {
+        if (class_exists($id)) {
+            $definition = new ClassDefinition($id, $value);
+        } else if (interface_exists($id)) {
+            $definition = new InterfaceDefinition($id, $value);
         } else {
-            $this->container[$id] = $abstract;
+            $definition = new ValueDefinition($id, $value);
         }
 
-        return $this;
+        $this->setDefinition($definition);
+
+        return $definition;
     }
 
     /**
-     * @param $id
-     * @param null $abstract
-     *
-     * @return $this
-     */
-    public function share($id, $abstract = null) {
-        if ($abstract !== null) {
-            $this->set($id, $abstract);
-        }
-
-        $this->shared[$id] = true;
-
-        return $this;
-    }
-
-    /**
-     * @param $id
+     * @param string $id
      *
      * @return bool
      */
     public function has($id) {
-        return array_has($this->container, $id);
+        return array_has($this->definitions, $id);
     }
 
     /**
-     * @param $id
+     * @param string $id
      */
     public function remove($id) {
         if ($this->has($id)) {
-            unset($this->container[$id]);
+            array_remove($this->definitions, $id);
         }
     }
 
@@ -117,7 +93,6 @@ class Container implements IContainer {
      * @param array $args
      *
      * @return mixed
-     * @throws Exceptions\MissingArgumentException
      */
     public function call($function, array $args = []) {
         return $this->reflector
@@ -130,7 +105,6 @@ class Container implements IContainer {
      * @param array $args
      *
      * @return mixed
-     * @throws Exceptions\MissingArgumentException
      */
     public function callMethod($instance, $method, array $args = []) {
         return $this->reflector
@@ -143,7 +117,6 @@ class Container implements IContainer {
      * @param array $args
      *
      * @return mixed
-     * @throws Exceptions\MissingArgumentException
      */
     public function callStaticMethod($class, $method, array $args = []) {
         return $this->reflector
@@ -151,85 +124,152 @@ class Container implements IContainer {
     }
 
     /**
-     * @return IReflector
+     * @return Reflector
      */
     protected function createReflector() {
         return new Reflector();
     }
 
     /**
-     * @param $class
+     * Put current container instance in the container.
+     */
+    protected function shareContainerInstance() {
+        $this->set(IContainer::class, $this);
+        $this->set(static::class, $this);
+    }
+
+    /**
+     * @param string $id
      * @param array $args
      *
-     * @return object
-     * @throws ImplementationNotFoundException
+     * @return mixed
+     * @throws InterfaceImplementationNotFoundException
+     * @throws TypeMismatchException
+     * @throws ValueNotFoundException
      */
-    protected function getClass($class, array $args) {
-        try {
-            return $this->reflector
-                ->resolveClass($this, $class, $args);
-        } catch (InterfaceIsNotInstantiableException $ex) {
-            throw new ImplementationNotFoundException(
-                s('No implementation found for interface %s.', $ex->getInterface())
+    protected function resolveWithoutDefinition($id, array $args = []) {
+        if (class_exists($id)) {
+            return $this->getClass(new ClassDefinition($id, null), $args);
+        }
+
+        if (interface_exists($id)) {
+            throw new InterfaceImplementationNotFoundException(
+                s('No implementation found in container for interface %s.', $id)
             );
         }
+
+        throw new ValueNotFoundException(
+            s('No value found in container for id %s.', $id)
+        );
     }
 
     /**
-     * Register this container instance in the container.
+     * @param IDefinition $definition
+     * @param array $args
+     *
+     * @return mixed
+     * @throws TypeMismatchException
      */
-    protected function registerContainerInstance() {
-        $this->set(static::class, $this);
-        $this->set(IContainer::class, $this);
+    protected function resolveDefinition(IDefinition $definition, array $args = []) {
+        $value = null;
+
+        if ($definition instanceof InterfaceDefinition) {
+            $value = $this->getInterface($definition, $args);
+        } else if ($definition instanceof ClassDefinition) {
+            $value = $this->getClass($definition, $args);
+        } else {
+            $value = $definition->getValue();
+        }
+
+        $this->processSingletonDefinition($definition, $value);
+
+        return $value;
     }
 
     /**
-     * @param $id
-     * @param $instance
+     * @param ClassDefinition $definition
+     * @param array $args
+     *
+     * @return mixed
+     * @throws TypeMismatchException
      */
-    protected function shareInstance($id, $instance) {
-        if (array_has($this->shared, $id)) {
-            $this->set($id, $instance);
+    protected function getClass(ClassDefinition $definition, array $args = []) {
+        $abstract = $definition->getValue();
+        $class = $definition->getId();
+        $instance = null;
+
+        if (is_callable($abstract)) {
+            $instance = $this->call($abstract, $args);
+        } else if (is_object($abstract)) {
+            $instance = $abstract;
+        } else {
+            if ($abstract === null) {
+                $abstract = $class;
+            }
+
+            $instance = $this->reflector
+                ->resolveClass($this, $abstract, $args);
+        }
+
+        if ($instance instanceof $class) {
+            return $instance;
+        }
+
+        throw new TypeMismatchException(
+            s(
+                'Container expects an implementation of type %s, %s given.',
+                $class, get_type($instance)
+            )
+        );
+    }
+
+    /**
+     * @param InterfaceDefinition $definition
+     * @param array $args
+     *
+     * @return mixed
+     * @throws TypeMismatchException
+     */
+    protected function getInterface(InterfaceDefinition $definition, array $args = []) {
+        $abstract = $definition->getValue();
+        $interface = $definition->getId();
+        $instance = null;
+
+        if (is_callable($abstract)) {
+            $instance = $this->call($abstract, $args);
+        } else if (is_object($abstract)) {
+            $instance = $abstract;
+        } else if (class_exists($abstract)) {
+            $instance = $this->getClass(new ClassDefinition($abstract, null), $args);
+        }
+
+        if ($instance instanceof $interface) {
+            return $instance;
+        }
+
+        throw new TypeMismatchException(
+            s(
+                'Container expects an implementation of type %s, %s given.',
+                $interface, get_type($instance)
+            )
+        );
+    }
+
+    /**
+     * @param IDefinition $definition
+     * @param $value
+     */
+    protected function processSingletonDefinition(IDefinition $definition, $value) {
+        if ($definition->isSingleton() && ! $definition instanceof ValueDefinition) {
+            $newDefinition = new ValueDefinition($definition->getId(), $value);
+            $this->setDefinition($newDefinition);
         }
     }
 
     /**
-     * @param $offset
-     *
-     * @return bool
+     * @param IDefinition $definition
      */
-    public function offsetExists($offset) {
-        return array_has($this->container, $offset);
-    }
-
-    /**
-     * @param $offset
-     *
-     * @return mixed
-     */
-    public function offsetGet($offset) {
-        return array_get($this->container, $offset);
-    }
-
-    /**
-     * @param $offset
-     * @param $value
-     */
-    public function offsetSet($offset, $value) {
-        $this->container[$offset] = $value;
-    }
-
-    /**
-     * @param $offset
-     */
-    public function offsetUnset($offset) {
-        array_remove($this->container, $offset);
-    }
-
-    /**
-     * @return int
-     */
-    public function count() {
-        return count($this->container);
+    protected function setDefinition(IDefinition $definition) {
+        $this->definitions[$definition->getId()] = $definition;
     }
 }

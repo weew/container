@@ -6,11 +6,9 @@ use Exception;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionParameter;
-use Weew\Container\Exceptions\ClassNotFoundException;
-use Weew\Container\Exceptions\DebugInfoException;
-use Weew\Container\Exceptions\ImplementationNotFoundException;
-use Weew\Container\Exceptions\InterfaceIsNotInstantiableException;
-use Weew\Container\Exceptions\MissingArgumentException;
+use Weew\Container\Exceptions\InterfaceImplementationNotFoundException;
+use Weew\Container\Exceptions\UnresolveableArgumentException;
+use Weew\Container\Exceptions\ValueNotFoundException;
 
 class Reflector implements IReflector {
     /**
@@ -19,22 +17,10 @@ class Reflector implements IReflector {
      * @param array $args
      *
      * @return object
-     * @throws ClassNotFoundException
      * @throws InterfaceIsNotInstantiableException
-     * @throws MissingArgumentException
      */
     public function resolveClass(IContainer $container, $className, array $args = []) {
-        if (class_exists($className)) {
-            $class = new ReflectionClass($className);
-
-            return $this->resolveConstructor($container, $class, $args);
-        }
-
-        if (interface_exists($className)) {
-            throw new InterfaceIsNotInstantiableException($className);
-        }
-
-        throw new ClassNotFoundException($className);
+        return $this->resolveConstructor($container, $className, $args);
     }
 
     /**
@@ -44,7 +30,8 @@ class Reflector implements IReflector {
      * @param array $args
      *
      * @return mixed
-     * @throws DebugInfoException
+     * @throws Exception
+     * @throws UnresolveableArgumentException
      */
     public function resolveMethod(IContainer $container, $instance, $methodName, array $args = []) {
         $class = new ReflectionClass($instance);
@@ -54,7 +41,7 @@ class Reflector implements IReflector {
             $arguments = $this->buildArgumentsFromParameters(
                 $container, $method->getParameters(), $args
             );
-        } catch (DebugInfoException $ex) {
+        } catch (UnresolveableArgumentException $ex) {
             $ex->setClassName($class->getName());
             $ex->setMethodName($method->getName());
 
@@ -74,7 +61,8 @@ class Reflector implements IReflector {
      * @param array $args
      *
      * @return mixed
-     * @throws DebugInfoException
+     * @throws Exception
+     * @throws UnresolveableArgumentException
      */
     public function resolveFunction(IContainer $container, $functionName, array $args = []) {
         $function = new ReflectionFunction($functionName);
@@ -83,10 +71,8 @@ class Reflector implements IReflector {
             $arguments = $this->buildArgumentsFromParameters(
                 $container, $function->getParameters(), $args
             );
-        } catch (DebugInfoException $ex) {
-            $ex->setFunctionName(
-                $function->isClosure() ? 'Closure' : $function->getName()
-            );
+        } catch (UnresolveableArgumentException $ex) {
+            $ex->setFunctionName($function->isClosure() ? 'Closure' : $function->getName());
 
             throw $ex;
         }
@@ -96,13 +82,15 @@ class Reflector implements IReflector {
 
     /**
      * @param IContainer $container
-     * @param ReflectionClass $class
+     * @param $className
      * @param array $args
      *
      * @return object
-     * @throws DebugInfoException
+     * @throws Exception
+     * @throws UnresolveableArgumentException
      */
-    protected function resolveConstructor(IContainer $container, ReflectionClass $class, array $args = []) {
+    protected function resolveConstructor(IContainer $container, $className, array $args = []) {
+        $class = new ReflectionClass($className);
         $constructor = $class->getConstructor();
 
         if ($constructor !== null) {
@@ -110,7 +98,7 @@ class Reflector implements IReflector {
                 $arguments = $this->buildArgumentsFromParameters(
                     $container, $constructor->getParameters(), $args
                 );
-            } catch (DebugInfoException $ex) {
+            } catch (UnresolveableArgumentException $ex) {
                 $ex->setClassName($class->getName());
                 $ex->setMethodName($constructor->getName());
 
@@ -125,11 +113,12 @@ class Reflector implements IReflector {
 
     /**
      * @param IContainer $container
-     * @param array $parameters
+     * @param ReflectionParameter[] $parameters
      * @param array $args
      *
      * @return array
-     * @throws DebugInfoException
+     * @throws Exception
+     * @throws UnresolveableArgumentException
      */
     protected function buildArgumentsFromParameters(IContainer $container, array $parameters, array $args) {
         $arguments = [];
@@ -137,7 +126,8 @@ class Reflector implements IReflector {
         foreach ($parameters as $index => $parameter) {
             try {
                 $arguments[] = $this->getParameterValue($container, $parameter, $args);
-            } catch (DebugInfoException $ex) {
+            } catch (UnresolveableArgumentException $ex) {
+                $ex->setArgumentName($parameter->getName());
                 $ex->setArgumentIndex($index);
 
                 throw $ex;
@@ -154,7 +144,6 @@ class Reflector implements IReflector {
      *
      * @return mixed
      * @throws Exception
-     * @throws MissingArgumentException
      */
     protected function getParameterValue(IContainer $container, ReflectionParameter $parameter, array $args) {
         $parameterName = $parameter->getName();
@@ -166,30 +155,25 @@ class Reflector implements IReflector {
 
         if ($parameterClass !== null) {
             try {
-                $concrete = $container->get($parameterClass->getName());
+                return $container->get($parameterClass->getName());
             } catch (Exception $ex) {
                 $ignoreException = (
-                    $ex instanceof ImplementationNotFoundException ||
-                    $ex instanceof ClassNotFoundException
+                    $ex instanceof ValueNotFoundException ||
+                    $ex instanceof InterfaceImplementationNotFoundException
                 );
 
-                if ($parameter->isDefaultValueAvailable() && $ignoreException) {
-                    $concrete = $parameter->getDefaultValue();
-                } else {
+                if ( ! ($ignoreException && $parameter->isDefaultValueAvailable())) {
                     throw $ex;
                 }
             }
-
-            return $concrete;
         }
 
         if ($parameter->isDefaultValueAvailable()) {
             return $parameter->getDefaultValue();
         }
 
-        $ex = new MissingArgumentException('Missing argument.');
-        $ex->setArgumentName($parameterName);
-
-        throw $ex;
+        throw new UnresolveableArgumentException(
+            s('Value not found for argument %s.', $parameterName)
+        );
     }
 }

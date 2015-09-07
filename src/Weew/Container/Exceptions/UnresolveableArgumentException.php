@@ -2,7 +2,7 @@
 
 namespace Weew\Container\Exceptions;
 
-class MissingArgumentException extends DebugInfoException {
+class UnresolveableArgumentException extends DebugInfoException {
     /**
      * Build exception message.
      */
@@ -11,14 +11,14 @@ class MissingArgumentException extends DebugInfoException {
         $methodName = $this->getMethodName();
         $functionName = $this->getFunctionName();
 
-        $callable = $callable = $className . '::' . $methodName;;
-
-        if ($functionName !== null) {
+        if ($className !== null && $methodName !== null) {
+            $callable = $className . '::' . $methodName;;
+        } else {
             $callable = $functionName;
         }
 
         $this->message = s(
-            'Missing argument %s for %s.',
+            'Container could not resolve argument %s for %s.',
             $this->getArgumentIndex(),
             $callable
         );

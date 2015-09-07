@@ -116,36 +116,6 @@ abstract class DebugInfoException extends Exception {
     }
 
     /**
-     * @return string
-     */
-    public function getArgumentType() {
-        return $this->argumentType;
-    }
-
-    /**
-     * @param string $argumentType
-     */
-    public function setArgumentType($argumentType) {
-        $this->argumentType = $argumentType;
-        $this->buildMessage();
-    }
-
-    /**
-     * @return string
-     */
-    public function getReceivedArgumentType() {
-        return $this->receivedArgumentType;
-    }
-
-    /**
-     * @param string $receivedArgumentType
-     */
-    public function setReceivedArgumentType($receivedArgumentType) {
-        $this->receivedArgumentType = $receivedArgumentType;
-        $this->buildMessage();
-    }
-
-    /**
      * Build exception message.
      */
     abstract protected function buildMessage();

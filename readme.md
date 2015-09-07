@@ -227,6 +227,53 @@ $container = new Container();
 $container->callMethod(Bar::class, 'takeFoo', ['x' => 1]);
 ```
 
+#### Singletons
+
+Container values can be defined as singletons. A singleton definition will return the same value over and over again. Here is an example of a singleton interface definition:
+
+```php
+interface IFoo {}
+class Foo implements IFoo {}
+
+$container = new Container();
+
+$container->set(IFoo::class, Foo::class)->singleton();
+```
+
+The same works for classes:
+
+```php
+class Foo {}
+
+$container = new Container();
+
+$container->set(Foo::class, Foo::class)->singleton();
+```
+
+And factories:
+
+```php
+class Foo {}
+
+$container = new Container();
+
+$container->set(Foo::class, function() {
+    return new Foo();
+})->singleton();
+```
+
+Sharing an instance always results in a singleton:
+
+```php
+class Foo {}
+
+$container = new Container();
+
+$container->set(Foo::class, new Foo())->singleton();
+// same as
+$container->set(Foo::class, new Foo()); 
+```
+
 #### Additional methods
 
 Check if the container has a value:

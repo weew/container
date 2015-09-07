@@ -1,12 +1,9 @@
 <?php
 namespace Weew\Container;
 
-use ArrayAccess;
-use Countable;
-
-interface IContainer extends ArrayAccess, Countable {
+interface IContainer {
     /**
-     * @param $id
+     * @param string $id
      * @param array $args
      *
      * @return mixed
@@ -14,22 +11,22 @@ interface IContainer extends ArrayAccess, Countable {
     function get($id, array $args = []);
 
     /**
-     * @param $id
-     * @param $abstract
+     * @param string $id
+     * @param $value
      *
-     * @return IContainer
+     * @return IDefinition
      */
-    function set($id, $abstract = null);
+    function set($id, $value);
 
     /**
-     * @param $id
+     * @param string $id
      *
      * @return bool
      */
     function has($id);
 
     /**
-     * @param $id
+     * @param string $id
      */
     function remove($id);
 
@@ -38,7 +35,6 @@ interface IContainer extends ArrayAccess, Countable {
      * @param array $args
      *
      * @return mixed
-     * @throws Exceptions\MissingArgumentException
      */
     function call($function, array $args = []);
 
@@ -48,7 +44,6 @@ interface IContainer extends ArrayAccess, Countable {
      * @param array $args
      *
      * @return mixed
-     * @throws Exceptions\MissingArgumentException
      */
     function callMethod($instance, $method, array $args = []);
 
@@ -58,7 +53,6 @@ interface IContainer extends ArrayAccess, Countable {
      * @param array $args
      *
      * @return mixed
-     * @throws Exceptions\MissingArgumentException
      */
     function callStaticMethod($class, $method, array $args = []);
 }
