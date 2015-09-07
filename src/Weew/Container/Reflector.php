@@ -7,7 +7,7 @@ use ReflectionClass;
 use ReflectionFunction;
 use ReflectionMethod;
 use ReflectionParameter;
-use Weew\Container\Exceptions\InterfaceImplementationNotFoundException;
+use Weew\Container\Exceptions\ImplementationNotFoundException;
 use Weew\Container\Exceptions\UnresolveableArgumentException;
 use Weew\Container\Exceptions\ValueNotFoundException;
 
@@ -189,7 +189,7 @@ class Reflector implements IReflector {
         } catch (Exception $ex) {
             $ignoreException = (
                 $ex instanceof ValueNotFoundException ||
-                $ex instanceof InterfaceImplementationNotFoundException
+                $ex instanceof ImplementationNotFoundException
             );
 
             if ( ! ($ignoreException && $parameter->isDefaultValueAvailable())) {

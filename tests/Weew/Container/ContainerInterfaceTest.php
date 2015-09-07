@@ -7,13 +7,13 @@ use Tests\Weew\Container\Stubs\SimpleImplementation;
 use Tests\Weew\Container\Stubs\IImplementation;
 use Tests\Weew\Container\Stubs\SimpleClass;
 use Weew\Container\Container;
-use Weew\Container\Exceptions\InterfaceImplementationNotFoundException;
+use Weew\Container\Exceptions\ImplementationNotFoundException;
 use Weew\Container\Exceptions\TypeMismatchException;
 
 class ContainerInterfaceTest extends PHPUnit_Framework_TestCase {
     public function test_get_interface_without_definition() {
         $container = new Container();
-        $this->setExpectedException(InterfaceImplementationNotFoundException::class);
+        $this->setExpectedException(ImplementationNotFoundException::class);
         $container->get(IImplementation::class);
     }
 

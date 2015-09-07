@@ -5,7 +5,7 @@ namespace Weew\Container;
 use Weew\Container\Definitions\ClassDefinition;
 use Weew\Container\Definitions\InterfaceDefinition;
 use Weew\Container\Definitions\ValueDefinition;
-use Weew\Container\Exceptions\InterfaceImplementationNotFoundException;
+use Weew\Container\Exceptions\ImplementationNotFoundException;
 use Weew\Container\Exceptions\TypeMismatchException;
 use Weew\Container\Exceptions\ValueNotFoundException;
 
@@ -32,7 +32,7 @@ class Container implements IContainer {
      * @param array $args
      *
      * @return mixed
-     * @throws InterfaceImplementationNotFoundException
+     * @throws ImplementationNotFoundException
      * @throws ValueNotFoundException
      */
     public function get($id, array $args = []) {
@@ -143,7 +143,7 @@ class Container implements IContainer {
      * @param array $args
      *
      * @return mixed
-     * @throws InterfaceImplementationNotFoundException
+     * @throws ImplementationNotFoundException
      * @throws TypeMismatchException
      * @throws ValueNotFoundException
      */
@@ -153,7 +153,7 @@ class Container implements IContainer {
         }
 
         if (interface_exists($id)) {
-            throw new InterfaceImplementationNotFoundException(
+            throw new ImplementationNotFoundException(
                 s('No implementation found in container for interface %s.', $id)
             );
         }
