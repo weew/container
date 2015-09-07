@@ -10,6 +10,7 @@ use Tests\Weew\Container\Stubs\IImplementation;
 use Tests\Weew\Container\Stubs\InterfaceConstructor;
 use Tests\Weew\Container\Stubs\MethodClass;
 use Tests\Weew\Container\Stubs\NoConstructor;
+use Tests\Weew\Container\Stubs\NullableInterfaceConstructor;
 use Tests\Weew\Container\Stubs\SharedClass;
 use Tests\Weew\Container\Stubs\SharedConstructor;
 use Weew\Container\Container;
@@ -122,6 +123,17 @@ class ContainerTest extends PHPUnit_Framework_TestCase {
 
         $container->set(IImplementation::class, FooImplementation::class);
         $concrete = $container->get(InterfaceConstructor::class);
+        $this->assertTrue($concrete->implementation instanceof FooImplementation);
+    }
+
+    public function test_get_with_nullable_interface_argument() {
+        $container = new Container();
+
+        $concrete = $container->get(NullableInterfaceConstructor::class);
+        $this->assertNull($concrete->implementation);
+
+        $container->set(IImplementation::class, FooImplementation::class);
+        $concrete = $container->get(NullableInterfaceConstructor::class);
         $this->assertTrue($concrete->implementation instanceof FooImplementation);
     }
 

@@ -2,11 +2,13 @@
 
 namespace Weew\Container;
 
+use Exception;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionParameter;
 use Weew\Container\Exceptions\ClassNotFoundException;
 use Weew\Container\Exceptions\DebugInfoException;
+use Weew\Container\Exceptions\ImplementationNotFoundException;
 use Weew\Container\Exceptions\InterfaceIsNotInstantiableException;
 use Weew\Container\Exceptions\MissingArgumentException;
 
@@ -151,6 +153,7 @@ class Reflector implements IReflector {
      * @param array $args
      *
      * @return mixed
+     * @throws Exception
      * @throws MissingArgumentException
      */
     protected function getParameterValue(IContainer $container, ReflectionParameter $parameter, array $args) {
@@ -162,7 +165,20 @@ class Reflector implements IReflector {
         }
 
         if ($parameterClass !== null) {
-            $concrete = $container->get($parameterClass->getName());
+            try {
+                $concrete = $container->get($parameterClass->getName());
+            } catch (Exception $ex) {
+                $ignoreException = (
+                    $ex instanceof ImplementationNotFoundException ||
+                    $ex instanceof ClassNotFoundException
+                );
+
+                if ($parameter->isDefaultValueAvailable() && $ignoreException) {
+                    $concrete = $parameter->getDefaultValue();
+                } else {
+                    throw $ex;
+                }
+            }
 
             return $concrete;
         }
