@@ -7,6 +7,7 @@ use Weew\Container\Definitions\InterfaceDefinition;
 use Weew\Container\Definitions\ValueDefinition;
 use Weew\Container\Exceptions\ImplementationNotFoundException;
 use Weew\Container\Exceptions\TypeMismatchException;
+use Weew\Container\Exceptions\UnresolveableArgumentException;
 use Weew\Container\Exceptions\ValueNotFoundException;
 
 class Container implements IContainer {
@@ -38,21 +39,26 @@ class Container implements IContainer {
      *
      * @return mixed
      * @throws ImplementationNotFoundException
+     * @throws TypeMismatchException
+     * @throws UnresolveableArgumentException
      * @throws ValueNotFoundException
+     * @throws \Exception
      */
     public function get($id, array $args = []) {
-        $value = null;
+        return $this->catchExceptions(function () use ($id, $args) {
+            $value = null;
 
-        if (array_has($this->definitions, $id)) {
-            $definition = array_get($this->definitions, $id);
-            $value = $this->resolveDefinition($definition, $args);
-        }
+            if (array_has($this->definitions, $id)) {
+                $definition = array_get($this->definitions, $id);
+                $value = $this->resolveDefinition($definition, $args);
+            }
 
-        if ($value === null) {
-            return $this->resolveWithoutDefinition($id, $args);
-        }
+            if ($value === null) {
+                return $this->resolveWithoutDefinition($id, $args);
+            }
 
-        return $value;
+            return $value;
+        });
     }
 
     /**
@@ -100,8 +106,10 @@ class Container implements IContainer {
      * @return mixed
      */
     public function call($function, array $args = []) {
-        return $this->reflector
-            ->resolveFunction($this, $function, $args);
+        return $this->catchExceptions(function () use ($function, $args) {
+            return $this->reflector
+                ->resolveFunction($this, $function, $args);
+        });
     }
 
     /**
@@ -112,8 +120,10 @@ class Container implements IContainer {
      * @return mixed
      */
     public function callMethod($instance, $method, array $args = []) {
-        return $this->reflector
-            ->resolveMethod($this, $instance, $method, $args);
+        return $this->catchExceptions(function () use ($instance, $method, $args) {
+            return $this->reflector
+                ->resolveMethod($this, $instance, $method, $args);
+        });
     }
 
     /**
@@ -124,8 +134,34 @@ class Container implements IContainer {
      * @return mixed
      */
     public function callStaticMethod($class, $method, array $args = []) {
-        return $this->reflector
-            ->resolveMethod($this, $class, $method, $args);
+        return $this->catchExceptions(function () use ($class, $method, $args) {
+            return $this->reflector
+                ->resolveMethod($this, $class, $method, $args);
+        });
+    }
+
+    /**
+     * @param callable $callable
+     *
+     * @return mixed
+     * @throws ImplementationNotFoundException
+     * @throws TypeMismatchException
+     * @throws UnresolveableArgumentException
+     * @throws ValueNotFoundException
+     * @throws \Exception
+     */
+    protected function catchExceptions(callable $callable) {
+        try {
+            return $callable();
+        } catch (ImplementationNotFoundException $ex) {
+            throw $ex;
+        } catch (TypeMismatchException $ex) {
+            throw $ex;
+        } catch (UnresolveableArgumentException $ex) {
+            throw $ex;
+        } catch (ValueNotFoundException $ex) {
+            throw $ex;
+        }
     }
 
     /**
