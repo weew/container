@@ -154,13 +154,13 @@ class Container implements IContainer {
         try {
             return $callable();
         } catch (ImplementationNotFoundException $ex) {
-            throw $ex;
+            throw new ImplementationNotFoundException($ex->getMessage());
         } catch (TypeMismatchException $ex) {
-            throw $ex;
+            throw new TypeMismatchException($ex->getMessage());
         } catch (UnresolveableArgumentException $ex) {
-            throw $ex;
+            throw new UnresolveableArgumentException($ex->getMessage());
         } catch (ValueNotFoundException $ex) {
-            throw $ex;
+            throw new ValueNotFoundException($ex->getMessage());
         }
     }
 
