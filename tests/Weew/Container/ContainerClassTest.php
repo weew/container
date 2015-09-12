@@ -94,4 +94,22 @@ class ContainerClassTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue($value->implementation instanceof SimpleImplementation);
         $this->assertEquals(1, $value->foo);
     }
+
+    public function test_set_by_class_only() {
+        $container = new Container();
+        $container->set(SimpleImplementation::class, SimpleImplementation::class)->singleton();
+        $value = $container->get(SimpleImplementation::class);
+        $value2 = $container->get(SimpleImplementation::class);
+
+        $this->assertTrue($value === $value2);
+    }
+
+    public function test_set_definition_by_instance() {
+        $container = new Container();
+        $value = new SimpleImplementation();
+        $container->set($value);
+        $value2 = $container->get(SimpleImplementation::class);
+
+        $this->assertTrue($value === $value2);
+    }
 }

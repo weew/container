@@ -67,7 +67,15 @@ class Container implements IContainer {
      *
      * @return IDefinition
      */
-    public function set($id, $value) {
+    public function set($id, $value = null) {
+        if ($value === null) {
+            $value = $id;
+
+            if (is_object($id)) {
+                $id = get_class($id);
+            }
+        }
+
         if (class_exists($id)) {
             $definition = new ClassDefinition($id, $value);
         } else if (interface_exists($id)) {

@@ -16,7 +16,7 @@ interface IContainer {
      *
      * @return IDefinition
      */
-    function set($id, $value);
+    function set($id, $value = null);
 
     /**
      * @param string $id

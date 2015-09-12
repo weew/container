@@ -247,7 +247,7 @@ class Foo {}
 
 $container = new Container();
 
-$container->set(Foo::class, Foo::class)->singleton();
+$container->set(Foo::class)->singleton();
 ```
 
 And factories:
@@ -271,7 +271,7 @@ $container = new Container();
 
 $container->set(Foo::class, new Foo())->singleton();
 // same as
-$container->set(Foo::class, new Foo()); 
+$container->set(Foo::class, new Foo());
 ```
 
 #### Additional methods
