@@ -37,7 +37,6 @@ Retrieving classes:
 ```php
 class Foo {}
 
-
 // returns a new instance of Foo
 $container->get(Foo::class);
 ```
@@ -48,7 +47,6 @@ Passing additional parameters:
 class Foo {
     public function __construct($x, $y = 2) {};
 }
-
 
 // parameters are matched by name
 $container->get(Foo::class, ['x' => 1]);
@@ -61,7 +59,6 @@ class Foo {
     public function __construct(Bar $bar) {}
 }
 class Bar {}
-
 
 // returns a new instance of Foo,
 // Foo's constructor receives a new instance of Bar
@@ -90,7 +87,6 @@ class Foo {
     public $bar;
 }
 class Bar {}
-
 
 // a factory method will get it's dependencies resolved too.
 $container->set(Foo::class, function(Bar $bar) {
@@ -176,7 +172,6 @@ Functions can get resolved by the container:
 class Bar {}
 function foo(Bar $bar, $foo) {}
 
-
 // method foo gets called and receives an instance of Bar
 // as with the other container methods, you can always pass your own arguments
 $container->callFunction('foo', ['foo' => 1]);
@@ -199,7 +194,6 @@ class Bar {
     public function takeFoo(Foo $foo, $x) {}
 }
 
-
 $bar = new Bar();
 // method takeFoo gets invoked and receives a new instance
 // of Foo, as well as the custom arguments
@@ -215,7 +209,6 @@ class Foo {}
 class Bar {
     public static function takeFoo(Foo $foo, $x) {}
 }
-
 
 // method takeFoo gets invoked and receives a new instance
 // of Foo, as well as the custom arguments
@@ -245,7 +238,6 @@ Container values can be defined as singletons. A singleton definition will retur
 interface IFoo {}
 class Foo implements IFoo {}
 
-
 $container->set(IFoo::class, Foo::class)->singleton();
 ```
 
@@ -254,7 +246,6 @@ The same works for classes:
 ```php
 class Foo {}
 
-
 $container->set(Foo::class)->singleton();
 ```
 
@@ -262,7 +253,6 @@ And factories:
 
 ```php
 class Foo {}
-
 
 $container->set(Foo::class, function() {
     return new Foo();
@@ -273,7 +263,6 @@ Sharing an instance always results in a singleton:
 
 ```php
 class Foo {}
-
 
 $container->set(Foo::class, new Foo())->singleton();
 // same as
@@ -320,9 +309,9 @@ $container->set('/Repository$/', function(RepositoryFactory $factory, $abstract)
 })->singleton();
 ```
 
-Wildcards are very powerful, however, they should be used with caution, since they could break your application if you configure it wrong. (for example: if the regex mask is not precise enough and matches unwanted classes). Thanks to regex, creating precise masks shouldn't be a big deal.
+Wildcards are very powerful, however, they should be used with caution, since they could break your application if you configure them wrong. (for example: if the regex mask is not precise enough and matches unwanted classes). Thanks to regex, creating precise masks shouldn't be a big deal though.
 
-Wildcards can also be used in combination of class names and or instances. However, I find the usecase for this very limited:
+Wildcards can also be used in combination of class names and instances. But I find the usecases for this very limited:
 
 ```php
 $container->set('/Repository$/', EntityRepository::class);
