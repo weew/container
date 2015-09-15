@@ -11,12 +11,19 @@
 
 ## Usage
 
+#### Creating a container
+
+The container has no additional dependencies, so a simple instatiation will do the trick.
+
+```php
+$container = new Container();
+```
+
 #### Primitive data
 
 Storing any type of data:
 
 ```php
-$container = new Container();
 $container->set('foo', 'bar');
 
 // returns bar
@@ -30,7 +37,6 @@ Retrieving classes:
 ```php
 class Foo {}
 
-$container = new Container();
 
 // returns a new instance of Foo
 $container->get(Foo::class);
@@ -43,7 +49,6 @@ class Foo {
     public function __construct($x, $y = 2) {};
 }
 
-$container = new Container();
 
 // parameters are matched by name
 $container->get(Foo::class, ['x' => 1]);
@@ -57,7 +62,6 @@ class Foo {
 }
 class Bar {}
 
-$container = new Container();
 
 // returns a new instance of Foo,
 // Foo's constructor receives a new instance of Bar
@@ -69,7 +73,6 @@ Sharing a specific instance:
 ```php
 class Foo {}
 
-$container = new Container();
 $container->set(Foo::class, new Foo());
 // or
 $container->set(new Foo());
@@ -88,7 +91,6 @@ class Foo {
 }
 class Bar {}
 
-$container = new Container();
 
 // a factory method will get it's dependencies resolved too.
 $container->set(Foo::class, function(Bar $bar) {
@@ -102,7 +104,6 @@ $container->set(Foo::class, function(Bar $bar) {
 Accessing container from within a factory:
 
 ```php
-$container = new Container();
 $container->set('foo', 1);
 
 // a container can be injected the same way as any other dependency
@@ -119,7 +120,6 @@ Resolving interfaces:
 interface IFoo {}
 class Foo implements IFoo {}
 
-$container = new Container();
 $container->set(IFoo::class, Foo::class);
 
 // will return an instance of Foo
@@ -132,7 +132,6 @@ Sharing specific interface implementation:
 interface IFoo {}
 class Foo implements IFoo {}
 
-$container = new Container();
 $container->set(IFoo::class, new Foo());
 
 // everyone will get the same instance of Foo
@@ -145,7 +144,6 @@ Interfaces can have factories too:
 interface IFoo {}
 class Foo implements IFoo {}
 
-$container = new Container();
 $container->set(IFoo::class, function() {
     return new Foo();
 });
@@ -163,7 +161,6 @@ class Bar {
     public function __construct(IFoo $foo) {}
 }
 
-$container = new Container();
 $container->set(IFoo::class, Foo::class);
 
 // returns an instance of Bar
@@ -179,7 +176,6 @@ Functions can get resolved by the container:
 class Bar {}
 function foo(Bar $bar, $foo) {}
 
-$container = new Container();
 
 // method foo gets called and receives an instance of Bar
 // as with the other container methods, you can always pass your own arguments
@@ -190,7 +186,6 @@ The same works for closures:
 
 ```php
 class Bar {}
-$container = new Container();
 
 // closure gets called and receives an instance of Bar
 $container->callFunction(function(Bar $bar) {});
@@ -204,7 +199,6 @@ class Bar {
     public function takeFoo(Foo $foo, $x) {}
 }
 
-$container = new Container();
 
 $bar = new Bar();
 // method takeFoo gets invoked and receives a new instance
@@ -222,7 +216,6 @@ class Bar {
     public static function takeFoo(Foo $foo, $x) {}
 }
 
-$container = new Container();
 
 // method takeFoo gets invoked and receives a new instance
 // of Foo, as well as the custom arguments
@@ -252,7 +245,6 @@ Container values can be defined as singletons. A singleton definition will retur
 interface IFoo {}
 class Foo implements IFoo {}
 
-$container = new Container();
 
 $container->set(IFoo::class, Foo::class)->singleton();
 ```
@@ -262,7 +254,6 @@ The same works for classes:
 ```php
 class Foo {}
 
-$container = new Container();
 
 $container->set(Foo::class)->singleton();
 ```
@@ -272,7 +263,6 @@ And factories:
 ```php
 class Foo {}
 
-$container = new Container();
 
 $container->set(Foo::class, function() {
     return new Foo();
@@ -284,7 +274,6 @@ Sharing an instance always results in a singleton:
 ```php
 class Foo {}
 
-$container = new Container();
 
 $container->set(Foo::class, new Foo())->singleton();
 // same as
@@ -303,7 +292,7 @@ class MyRepository {
 $container->get(MyRepository::class);
 ```
 
-However, you might use a wildcard factory. You can use any regex pattern as a mask. Right now, the only supported regex delimiters are '/' and '#'.
+However, you might use a wildcard factory. You can use any regex pattern as a mask. Right now, the only supported regex delimiters are `/` and #`.
 
 ```php
 class MyRepository implements IRepository {
@@ -331,7 +320,7 @@ $container->set('/Repository$/', function(RepositoryFactory $factory, $abstract)
 })->singleton();
 ```
 
-This feature is very powerful, however, it should be used with caution, since it could break your application if you configure it wrong. (for example: if the regex mask is not precise enough and matches unwanted classes). Thanks to regex, creating precise masks shouldn't be a big deal.
+Wildcards are very powerful, however, they should be used with caution, since they could break your application if you configure it wrong. (for example: if the regex mask is not precise enough and matches unwanted classes). Thanks to regex, creating precise masks shouldn't be a big deal.
 
 Wildcards can also be used in combination of class names and or instances. However, I find the usecase for this very limited:
 
@@ -345,7 +334,6 @@ $container->set('/Repository$/', $instance);
 Check if the container has a value:
 
 ```php
-$container = new Container();
 $container->set('foo', 'bar');
 
 // will return true
@@ -355,7 +343,6 @@ $container->has('foo');
 Remove a value from the container:
 
 ```php
-$container = new Container();
 $container->set('foo', 'bar');
 $container->remove('foo');
 
