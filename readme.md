@@ -281,7 +281,7 @@ class MyRepository {
 $container->get(MyRepository::class);
 ```
 
-However, you might use a wildcard factory. You can use any regex pattern as a mask. Right now, the only supported regex delimiters are `/` and #`.
+However, you might use a wildcard factory. You can use any regex pattern as a mask. Right now, the only supported regex delimiters are `/` and `#`.
 
 ```php
 class MyRepository implements IRepository {
