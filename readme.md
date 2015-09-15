@@ -183,7 +183,7 @@ $container = new Container();
 
 // method foo gets called and receives an instance of Bar
 // as with the other container methods, you can always pass your own arguments
-$container->call('foo', ['foo' => 1]);
+$container->callFunction('foo', ['foo' => 1]);
 ```
 
 The same works for closures:
@@ -193,7 +193,7 @@ class Bar {}
 $container = new Container();
 
 // closure gets called and receives an instance of Bar
-$container->call('foo', function(Bar $bar) {});
+$container->callFunction(function(Bar $bar) {});
 ```
 
 Invoking class methods is also strait forward:
@@ -210,6 +210,8 @@ $bar = new Bar();
 // method takeFoo gets invoked and receives a new instance
 // of Foo, as well as the custom arguments
 $container->callMethod($bar, 'takeFoo', ['x' => 1]);
+// you could also let the container create an instance
+$container->callMethod(Bar::class, 'takeFoo', ['x' => 1]);
 ```
 
 Invoking static methods:
@@ -224,7 +226,22 @@ $container = new Container();
 
 // method takeFoo gets invoked and receives a new instance
 // of Foo, as well as the custom arguments
-$container->callMethod(Bar::class, 'takeFoo', ['x' => 1]);
+$container->callStaticMethod(Bar::class, 'takeFoo', ['x' => 1]);
+```
+
+It is possible to use PHP's traditional callable syntax for invokation of functions and methods:
+
+```php
+// same as $container->callFunction($functionName)
+$container->call($functionName);
+// same as $container->callFunction($closure)
+$container->call($closure);
+// same as $container->callMethod($instance, $method)
+$container->call([$instance, $method]);
+// same as $container->callMethod($className, $method)
+$container->call([$className, $method]);
+// same as $container->callStaticMethod($className, $staticMethod)
+$container->call([$className, $staticMethod]);
 ```
 
 #### Singletons
