@@ -8,6 +8,7 @@ use ReflectionFunction;
 use ReflectionMethod;
 use ReflectionParameter;
 use Weew\Container\Exceptions\ImplementationNotFoundException;
+use Weew\Container\Exceptions\InvalidCallableFormatException;
 use Weew\Container\Exceptions\UnresolveableArgumentException;
 use Weew\Container\Exceptions\ValueNotFoundException;
 
@@ -63,6 +64,8 @@ class Reflector implements IReflector {
 
         if ($method->isStatic()) {
             $instance = null;
+        } else if (is_string($instance)) {
+            $instance = $container->get($instance);
         }
 
         return $method->invokeArgs($instance, $arguments);
@@ -93,6 +96,25 @@ class Reflector implements IReflector {
             $ex->setMethodName($method->getName());
 
             throw $ex;
+        }
+    }
+
+    /**
+     * @param IContainer $container
+     * @param $callable
+     * @param array $args
+     *
+     * @return mixed
+     * @throws Exception
+     * @throws UnresolveableArgumentException
+     */
+    public function resolveCallable(IContainer $container, $callable, array $args = []) {
+        if (is_string($callable) && function_exists($callable) || is_object($callable)) {
+            return $this->resolveFunction($container, $callable, $args);
+        } else if (is_array($callable) && is_callable($callable)) {
+            return $this->resolveMethod($container, $callable[0], $callable[1], $args);
+        } else {
+            throw new InvalidCallableFormatException('Invalid callable given.');
         }
     }
 
@@ -138,7 +160,7 @@ class Reflector implements IReflector {
                 $arguments[] = $this->getParameterValue($container, $parameter, $args);
             } catch (UnresolveableArgumentException $ex) {
                 $ex->setArgumentName($parameter->getName());
-                $ex->setArgumentIndex($index);
+                $ex->setArgumentIndex($index + 1);
 
                 throw $ex;
             }

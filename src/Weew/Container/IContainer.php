@@ -31,12 +31,20 @@ interface IContainer {
     function remove($id);
 
     /**
+     * @param $callable
+     * @param array $args
+     *
+     * @return mixed
+     */
+    function call($callable, array $args = []);
+
+    /**
      * @param $function
      * @param array $args
      *
      * @return mixed
      */
-    function call($function, array $args = []);
+    function callFunction($function, array $args = []);
 
     /**
      * @param $instance

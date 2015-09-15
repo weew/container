@@ -65,7 +65,10 @@ class ContainerClassTest extends PHPUnit_Framework_TestCase {
 
     public function test_get_class_with_missing_unresolvable_dependencies() {
         $container = new Container();
-        $this->setExpectedException(UnresolveableArgumentException::class);
+        $this->setExpectedException(
+            UnresolveableArgumentException::class,
+            'Container could not resolve argument 2 for Tests\Weew\Container\Stubs\ComplexClass::__construct.'
+        );
         $container->get(ComplexClass::class);
     }
 

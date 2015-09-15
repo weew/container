@@ -25,9 +25,9 @@ class UnresolveableArgumentExceptionTest extends PHPUnit_Framework_TestCase {
         $ex->setClassName('class');
         $ex->setMethodName('method');
         $ex->setArgumentName('arg');
-        $ex->setArgumentIndex(1);
+        $ex->setArgumentIndex(3);
         $this->assertEquals(
-            'Container could not resolve argument 1 for class::method.',
+            'Container could not resolve argument 3 for class::method.',
             $ex->getMessage()
         );
     }

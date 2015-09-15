@@ -29,4 +29,13 @@ interface IReflector {
      * @return mixed
      */
     function resolveFunction(IContainer $container, $functionName, array $args = []);
+
+    /**
+     * @param IContainer $container
+     * @param $callable
+     * @param array $args
+     *
+     * @return mixed
+     */
+    function resolveCallable(IContainer $container, $callable, array $args = []);
 }
