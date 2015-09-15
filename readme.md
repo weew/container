@@ -232,16 +232,16 @@ $container->callStaticMethod(Bar::class, 'takeFoo', ['x' => 1]);
 It is possible to use PHP's traditional callable syntax for invokation of functions and methods:
 
 ```php
-// same as $container->callFunction($functionName)
-$container->call($functionName);
-// same as $container->callFunction($closure)
-$container->call($closure);
-// same as $container->callMethod($instance, $method)
-$container->call([$instance, $method]);
-// same as $container->callMethod($className, $method)
-$container->call([$className, $method]);
-// same as $container->callStaticMethod($className, $staticMethod)
-$container->call([$className, $staticMethod]);
+// same as $container->callFunction($functionName, $args)
+$container->call($functionName, $args);
+// same as $container->callFunction($closure, $args)
+$container->call($closure, $args);
+// same as $container->callMethod($instance, $method, $args)
+$container->call([$instance, $method], $args);
+// same as $container->callMethod($className, $method, $args)
+$container->call([$className, $method], $args);
+// same as $container->callStaticMethod($className, $staticMethod, $args)
+$container->call([$className, $staticMethod], $args);
 ```
 
 #### Singletons
