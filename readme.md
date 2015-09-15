@@ -229,7 +229,7 @@ $container = new Container();
 $container->callStaticMethod(Bar::class, 'takeFoo', ['x' => 1]);
 ```
 
-It is possible to use PHP's traditional callable syntax for invokation of functions and methods:
+It is possible to use PHP's traditional callable syntax for invocation of functions and methods:
 
 ```php
 // same as $container->callFunction($functionName, $args)
@@ -289,6 +289,55 @@ $container = new Container();
 $container->set(Foo::class, new Foo())->singleton();
 // same as
 $container->set(Foo::class, new Foo());
+```
+
+#### Wildcards
+
+This one might be especially useful when working with factories. Lets take Doctrine for example. You can not simply instantiate a repository by yourself. But still, it would be great if you could have them resolved by the container. Unfortunately, this will throw an error, since the repository requires a special parameter that can and should not be resolved by the container:
+
+```php
+class MyRepository {
+    public function __construct(SpecialUnresolvableValue $value) {}
+}
+
+$container->get(MyRepository::class);
+```
+
+However, you might use a wildcard factory. You can use any regex pattern as a mask. Right now, the only supported regex delimiters are '/' and '#'.
+
+```php
+class MyRepository implements IRepository {
+    public function __construct(SpecialUnresolvableValue $value) {}
+}
+class YoursRepository implements IRepository {
+    public function __construct(SpecialUnresolvableValue $value) {}
+}
+
+$container->set('/Repository$/', function(RepositoryFactory $factory, $abstract) {
+    return $factory->createRepository($abstract);
+});
+
+$container->get(MyRepository::class);
+$container->get(YourRepository::class);
+```
+
+As you see here, the actual class name `MyRepository` was passed to the custom factory as the `$abstract` parameter. From there, we call the `RepositoryFactory` and tell it to create us a new instance of `MyRepository`. Afterwards the same factory can be used to create an instance of `YourRepository`. 
+
+Telling the container that all instances produced within this factory should be singletons is very simple:
+
+```php
+$container->set('/Repository$/', function(RepositoryFactory $factory, $abstract) {
+    return $factory->createRepository($abstract);
+})->singleton();
+```
+
+This feature is very powerful, however, it should be used with caution, since it could break your application if you configure it wrong. (for example: if the regex mask is not precise enough and matches unwanted classes). Thanks to regex, creating precise masks shouldn't be a big deal.
+
+Wildcards can also be used in combination of class names and or instances. However, I find the usecase for this very limited:
+
+```php
+$container->set('/Repository$/', EntityRepository::class);
+$container->set('/Repository$/', $instance);
 ```
 
 #### Additional methods

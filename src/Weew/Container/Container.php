@@ -5,6 +5,7 @@ namespace Weew\Container;
 use Weew\Container\Definitions\ClassDefinition;
 use Weew\Container\Definitions\InterfaceDefinition;
 use Weew\Container\Definitions\ValueDefinition;
+use Weew\Container\Definitions\WildcardDefinition;
 use Weew\Container\Exceptions\ImplementationNotFoundException;
 use Weew\Container\Exceptions\InvalidCallableFormatException;
 use Weew\Container\Exceptions\TypeMismatchException;
@@ -48,10 +49,10 @@ class Container implements IContainer {
     public function get($id, array $args = []) {
         return $this->rethrowExceptions(function () use ($id, $args) {
             $value = null;
+            $definition = $this->getDefinition($id);
 
-            if (array_has($this->definitions, $id)) {
-                $definition = array_get($this->definitions, $id);
-                $value = $this->resolveDefinition($definition, $args);
+            if ($definition instanceof IDefinition) {
+                $value = $this->resolveDefinition($definition, $id, $args);
             }
 
             if ($value === null) {
@@ -77,7 +78,9 @@ class Container implements IContainer {
             }
         }
 
-        if (class_exists($id)) {
+        if ($this->isRegexPattern($id)) {
+            $definition = new WildcardDefinition($id, $value);
+        } else if (class_exists($id)) {
             $definition = new ClassDefinition($id, $value);
         } else if (interface_exists($id)) {
             $definition = new InterfaceDefinition($id, $value);
@@ -85,7 +88,7 @@ class Container implements IContainer {
             $definition = new ValueDefinition($id, $value);
         }
 
-        $this->setDefinition($definition);
+        $this->addDefinition($definition);
 
         return $definition;
     }
@@ -96,15 +99,17 @@ class Container implements IContainer {
      * @return bool
      */
     public function has($id) {
-        return array_has($this->definitions, $id);
+        return $this->getDefinition($id) !== null;
     }
 
     /**
      * @param string $id
      */
     public function remove($id) {
-        if ($this->has($id)) {
-            array_remove($this->definitions, $id);
+        $index = $this->getDefinitionIndex($id);
+
+        if ($index !== null) {
+            array_remove($this->definitions, $index);
         }
     }
 
@@ -237,15 +242,18 @@ class Container implements IContainer {
 
     /**
      * @param IDefinition $definition
+     * @param $id
      * @param array $args
      *
      * @return mixed
      * @throws TypeMismatchException
      */
-    protected function resolveDefinition(IDefinition $definition, array $args = []) {
+    protected function resolveDefinition(IDefinition $definition, $id, array $args = []) {
         $value = null;
 
-        if ($definition instanceof InterfaceDefinition) {
+        if ($definition instanceof WildcardDefinition) {
+            $value = $this->getWildcard($definition, $id, $args);
+        } else if ($definition instanceof InterfaceDefinition) {
             $value = $this->getInterface($definition, $args);
         } else if ($definition instanceof ClassDefinition) {
             $value = $this->getClass($definition, $args);
@@ -253,7 +261,7 @@ class Container implements IContainer {
             $value = $definition->getValue();
         }
 
-        $this->processSingletonDefinition($definition, $value);
+        $this->processSingletonDefinition($definition, $id, $value);
 
         return $value;
     }
@@ -314,20 +322,83 @@ class Container implements IContainer {
 
     /**
      * @param IDefinition $definition
+     * @param $id
+     * @param $args
+     *
+     * @return mixed|null
+     * @throws TypeMismatchException
+     */
+    protected function getWildcard(IDefinition $definition, $id, $args) {
+        $abstract = $definition->getValue();
+        $instance = null;
+
+        $args['abstract'] = $id;
+
+        if (is_callable($abstract)) {
+            $instance = $this->call($abstract, $args);
+        } else if (is_object($abstract)) {
+            $instance = $abstract;
+        } else if (class_exists($abstract)) {
+            $instance = $this->getClass(new ClassDefinition($abstract, null), $args);
+        }
+
+        $this->matchClassType($id, $instance);
+
+        return $instance;
+    }
+
+    /**
+     * @param IDefinition $definition
+     * @param $id
      * @param $value
      */
-    protected function processSingletonDefinition(IDefinition $definition, $value) {
+    protected function processSingletonDefinition(IDefinition $definition, $id, $value) {
         if ($definition->isSingleton() && ! $definition instanceof ValueDefinition) {
-            $newDefinition = new ValueDefinition($definition->getId(), $value);
-            $this->setDefinition($newDefinition);
+            $newDefinition = new ValueDefinition($id, $value);
+            $this->addDefinition($newDefinition);
+        }
+    }
+
+    /**
+     * @param $id
+     *
+     * @return IDefinition
+     */
+    protected function getDefinition($id) {
+        foreach ($this->definitions as $definition) {
+            if ($definition instanceof WildcardDefinition) {
+                if ($this->matchRegexPattern($id, $definition->getId())) {
+                    return $definition;
+                }
+            } else if ($definition->getId() == $id) {
+                return $definition;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param $id
+     *
+     * @return int|null|string
+     */
+    protected function getDefinitionIndex($id) {
+        $definition = $this->getDefinition($id);
+
+        foreach ($this->definitions as $index => $item) {
+            if ($item === $definition) {
+                return $index;
+            }
         }
     }
 
     /**
      * @param IDefinition $definition
      */
-    protected function setDefinition(IDefinition $definition) {
-        $this->definitions[$definition->getId()] = $definition;
+    protected function addDefinition(IDefinition $definition) {
+        $this->remove($definition->getId());
+        array_unshift($this->definitions, $definition);
     }
 
     /**
@@ -345,5 +416,27 @@ class Container implements IContainer {
                 )
             );
         }
+    }
+
+    /**
+     * @param $string
+     *
+     * @return bool
+     */
+    protected function isRegexPattern($string) {
+        return str_starts_with($string, '/') &&
+            str_ends_with($string, '/') ||
+            str_starts_with($string, '#') &&
+            str_ends_with($string, '#');
+    }
+
+    /**
+     * @param $string
+     * @param $pattern
+     *
+     * @return bool
+     */
+    protected function matchRegexPattern($string, $pattern) {
+        return preg_match($pattern, $string) == 1;
     }
 }

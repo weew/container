@@ -100,7 +100,7 @@ class ContainerClassTest extends PHPUnit_Framework_TestCase {
 
     public function test_set_by_class_only() {
         $container = new Container();
-        $container->set(SimpleImplementation::class, SimpleImplementation::class)->singleton();
+        $container->set(SimpleImplementation::class)->singleton();
         $value = $container->get(SimpleImplementation::class);
         $value2 = $container->get(SimpleImplementation::class);
 

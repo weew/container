@@ -2,4 +2,4 @@
 
 namespace Tests\Weew\Container\Stubs;
 
-class SimpleImplementation implements IImplementation {}
+class SimpleImplementation extends BaseImplementation {}

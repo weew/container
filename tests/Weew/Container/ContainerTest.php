@@ -23,8 +23,17 @@ class ContainerTest extends PHPUnit_Framework_TestCase {
     public function test_remove() {
         $container = new Container();
         $container->set('foo', 'bar');
+        $container->set('bar', 'bar');
+        $container->set('baz', 'bar');
         $this->assertTrue($container->has('foo'));
         $container->remove('foo');
         $this->assertFalse($container->has('foo'));
+        $this->assertTrue($container->has('bar'));
+        $this->assertTrue($container->has('baz'));
+    }
+
+    public function test_remove_invalid_id() {
+        $container = new Container();
+        $container->remove('foo');
     }
 }
