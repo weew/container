@@ -143,6 +143,7 @@ class Resolver {
 
     /**
      * @param $abstract
+     * @param array $args
      *
      * @return mixed
      */
