@@ -5,6 +5,19 @@
 [![Coverage Status](https://coveralls.io/repos/weew/php-container/badge.svg?branch=master&service=github)](https://coveralls.io/github/weew/php-container?branch=master)
 [![License](https://poser.pugx.org/weew/php-container/license)](https://packagist.org/packages/weew/php-container)
 
+## Table of contents
+
+- [Installation](#installation)
+- [Creating a container](#creating-a-container)
+- [Primitive data](#primitive-data)
+- [Classes](#classes)
+- [Factories](#factories)
+- [Interfaces](#interfaces)
+- [Functions and methods](#functions-and-methods)
+- [Singletons](#singletons)
+- [Wildcards](#wildcards)
+- [Additional methods](#additional-methods)
+
 ## Installation
 
 `composer require weew/php-container`
