@@ -110,7 +110,7 @@ class Registry {
      * @param array $ids
      * @param $value
      *
-     * @return null|IDefinition
+     * @return IDefinition
      * @throws MissingDefinitionIdentifierException
      * @throws MissingDefinitionValueException
      */
