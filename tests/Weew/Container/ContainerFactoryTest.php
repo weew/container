@@ -26,4 +26,54 @@ class ContainerFactoryTest extends PHPUnit_Framework_TestCase {
         $value = $container->get(SimpleImplementation::class);
         $this->assertTrue($value instanceof SimpleImplementation);
     }
+
+    public function test_factory_with_instance_and_method() {
+        $container = new Container();
+        $container->set(IImplementation::class, $this, 'methodFactory');
+        $value = $container->get(IImplementation::class, ['foo' => 'bar']);
+        $this->assertTrue($value instanceof SimpleImplementation);
+    }
+
+    public function test_factory_with_class_and_method() {
+        $container = new Container();
+        $container->set(IImplementation::class, self::class, 'methodFactory');
+        $value = $container->get(IImplementation::class, ['foo' => 'bar']);
+        $this->assertTrue($value instanceof SimpleImplementation);
+    }
+
+    public function test_factory_with_with_static_method() {
+        $container = new Container();
+        $container->set(IImplementation::class, self::class, 'staticMethodFactory');
+        $value = $container->get(IImplementation::class, ['foo' => 'bar']);
+        $this->assertTrue($value instanceof SimpleImplementation);
+    }
+
+    public function test_factory_with_array_syntax_with_instance_and_method() {
+        $container = new Container();
+        $container->set(IImplementation::class, [$this, 'methodFactory']);
+        $value = $container->get(IImplementation::class, ['foo' => 'bar']);
+        $this->assertTrue($value instanceof SimpleImplementation);
+    }
+
+    public function test_factory_with_array_syntax_with_class_and_method() {
+        $container = new Container();
+        $container->set(IImplementation::class, [self::class, 'methodFactory']);
+        $value = $container->get(IImplementation::class, ['foo' => 'bar']);
+        $this->assertTrue($value instanceof SimpleImplementation);
+    }
+
+    public function test_factory_with_array_syntax_with_static_method() {
+        $container = new Container();
+        $container->set(IImplementation::class, [self::class, 'staticMethodFactory']);
+        $value = $container->get(IImplementation::class, ['foo' => 'bar']);
+        $this->assertTrue($value instanceof SimpleImplementation);
+    }
+
+    public function methodFactory(SimpleClass $class, $foo) {
+        return new SimpleImplementation();
+    }
+
+    public static function staticMethodFactory(SimpleClass $class, $foo) {
+        return new SimpleImplementation();
+    }
 }

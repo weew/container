@@ -108,6 +108,28 @@ $container->set('bar', function(IContainer $container) {
 ));
 ```
 
+Container is not limited to closure factories, it supports class method and static method factories too:
+
+```php
+class MyFactoryClass {
+    public function factoryMethod(AnotherDependency $dependency) {}
+    public function staticFactoryMethod(AnotherDependency $dependency) {}
+}
+
+$container->set(Foo::class, new MyFactoryClass(), 'factoryMethod');
+$container->set(Foo::class, MyFactoryClass::class, 'factoryMethod');
+$container->set(Foo::class, MyFactoryClass::class, 'staticFactoryMethod');
+```
+
+Traditional callable array syntax is also supported. It does exactly the same as the examples above, but with a slightly different syntax:
+
+```php
+$container->set(Foo::class, [new MyFactoryClass(), 'factoryMethod']);
+$container->set(Foo::class, [MyFactoryClass::class, 'factoryMethod']);
+$container->set(Foo::class, [MyFactoryClass::class, 'staticFactoryMethod']);
+```
+All facotires benefit from dependency injection. Additionaly, if you let the container instantiate your factory, it will be resolved trough the container too.
+
 #### Interfaces
 
 Resolving interfaces:

@@ -70,6 +70,13 @@ class Container implements IContainer {
      * @return IDefinition
      */
     public function set($id, $value = null) {
+        $args = func_get_args();
+
+        if (count($args) > 2) {
+            array_shift($args);
+            $value = $args;
+        }
+
         if ($value === null) {
             $value = $id;
 
