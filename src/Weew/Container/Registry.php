@@ -66,7 +66,11 @@ class Registry {
         $index = $this->getDefinitionIndex($id);
 
         if ($index !== null) {
-            array_remove($this->definitions, $index);
+            $definition = $this->definitions[$index];
+
+            if ( ! $definition instanceof WildcardDefinition) {
+                array_remove($this->definitions, $index);
+            }
         }
     }
 

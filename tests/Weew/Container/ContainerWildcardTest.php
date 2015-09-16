@@ -8,6 +8,7 @@ use Tests\Weew\Container\Stubs\ComplexClass;
 use Tests\Weew\Container\Stubs\IImplementation;
 use Tests\Weew\Container\Stubs\SimpleClass;
 use Tests\Weew\Container\Stubs\SimpleImplementation;
+use Tests\Weew\Container\Stubs\SpecialImplementation;
 use Weew\Container\Container;
 use Weew\Container\Exceptions\TypeMismatchException;
 
@@ -80,7 +81,7 @@ class ContainerWildcardTest extends PHPUnit_Framework_TestCase {
     public function test_get_class_singleton_with_wildcard() {
         $container = new Container();
         $container->set('/Implementation$/', function($abstract) {
-            return new $abstract();
+            return new $abstract(1);
         })->singleton();
 
         $value1 = $container->get(BaseImplementation::class);
@@ -89,8 +90,8 @@ class ContainerWildcardTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue($value1 instanceof BaseImplementation);
         $this->assertTrue($value1 === $value2);
 
-        $value3 = $container->get(SimpleImplementation::class);
-        $this->assertTrue($value3 instanceof SimpleImplementation);
+        $value3 = $container->get(SpecialImplementation::class);
+        $this->assertTrue($value3 instanceof SpecialImplementation);
         $this->assertTrue($value1 !== $value3);
     }
 
