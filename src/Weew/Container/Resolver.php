@@ -148,14 +148,14 @@ class Resolver {
      */
     protected function resolveAbstract($abstract, array $args) {
         if (is_callable($abstract)) {
-            $instance = $this->container->call($abstract, $args);
+            return $this->container->call($abstract, $args);
         } else if (is_object($abstract)) {
-            $instance = $abstract;
+            return $abstract;
         } else if (class_exists($abstract)) {
-            $instance = $this->getClass(new ClassDefinition($abstract, null), $args);
+            return $this->getClass(new ClassDefinition($abstract, null), $args);
         }
 
-        return $instance;
+        return null;
     }
 
     /**
