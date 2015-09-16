@@ -2,10 +2,7 @@
 
 namespace Weew\Container;
 
-use Weew\Container\Definitions\ClassDefinition;
-use Weew\Container\Definitions\InterfaceDefinition;
 use Weew\Container\Definitions\ValueDefinition;
-use Weew\Container\Definitions\WildcardDefinition;
 use Weew\Container\Exceptions\ImplementationNotFoundException;
 use Weew\Container\Exceptions\InvalidCallableFormatException;
 use Weew\Container\Exceptions\TypeMismatchException;
@@ -14,25 +11,25 @@ use Weew\Container\Exceptions\ValueNotFoundException;
 
 class Container implements IContainer {
     /**
-     * @var IReflector
+     * @var Reflector
      */
     protected $reflector;
 
     /**
-     * @var DefinitionRegistry
+     * @var Registry
      */
     protected $registry;
 
     /**
-     * @param IReflector|null $reflector
+     * @var Resolver
      */
-    public function __construct(IReflector $reflector = null) {
-        if ( ! $reflector instanceof IReflector) {
-            $reflector = $this->createReflector();
-        }
+    protected $resolver;
 
-        $this->reflector = $reflector;
+    public function __construct() {
+        $this->reflector = $this->createReflector();
         $this->registry = $this->createRegistry();
+        $this->resolver = $this->createResolver();
+
         $this->shareContainerInstance();
     }
 
@@ -48,7 +45,19 @@ class Container implements IContainer {
      */
     public function get($id, array $args = []) {
         return $this->rethrowExceptions(function () use ($id, $args) {
-            return $this->registry->get($id, $args);
+            $value = null;
+            $definition =  $this->registry->getDefinition($id);
+
+            if ($definition instanceof IDefinition) {
+                $value = $this->resolver->resolveDefinition($definition, $id, $args);
+                $this->processSingletonDefinition($definition, $id, $value);
+            }
+
+            if ($value === null) {
+                return $this->resolver->resolveWithoutDefinition($id, $args);
+            }
+
+            return $value;
         });
     }
 
@@ -59,7 +68,7 @@ class Container implements IContainer {
      * @return IDefinition
      */
     public function set($id, $value = null) {
-        return call_user_func_array([$this->registry, 'set'], func_get_args());
+        return call_user_func_array([$this->registry, 'createDefinition'], func_get_args());
     }
 
     /**
@@ -166,6 +175,18 @@ class Container implements IContainer {
     }
 
     /**
+     * @param IDefinition $definition
+     * @param $id
+     * @param $value
+     */
+    protected function processSingletonDefinition(IDefinition $definition, $id, $value) {
+        if ($definition->isSingleton() && ! $definition instanceof ValueDefinition) {
+            $newDefinition = new ValueDefinition($id, $value);
+            $this->registry->addDefinition($newDefinition);
+        }
+    }
+
+    /**
      * @return Reflector
      */
     protected function createReflector() {
@@ -173,10 +194,17 @@ class Container implements IContainer {
     }
 
     /**
-     * @return DefinitionRegistry
+     * @return Registry
      */
     protected function createRegistry() {
-        return new DefinitionRegistry($this, $this->reflector);
+        return new Registry();
+    }
+
+    /**
+     * @return Resolver
+     */
+    protected function createResolver() {
+        return new Resolver($this, $this->reflector);
     }
 
     /**

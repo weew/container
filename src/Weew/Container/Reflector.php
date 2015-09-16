@@ -12,7 +12,7 @@ use Weew\Container\Exceptions\InvalidCallableFormatException;
 use Weew\Container\Exceptions\UnresolveableArgumentException;
 use Weew\Container\Exceptions\ValueNotFoundException;
 
-class Reflector implements IReflector {
+class Reflector {
     /**
      * @param IContainer $container
      * @param $className
