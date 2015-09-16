@@ -24,6 +24,16 @@ interface IDefinition {
     function setValue($value);
 
     /**
+     * @return IDefinition[]
+     */
+    function getAliases();
+
+    /**
+     * @param IDefinition $alias
+     */
+    function addAlias(IDefinition $alias);
+
+    /**
      * @return void
      */
     function singleton();

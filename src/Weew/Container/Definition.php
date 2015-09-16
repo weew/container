@@ -6,17 +6,22 @@ abstract class Definition implements IDefinition {
     /**
      * @var string
      */
-    private $id;
+    protected $id;
 
     /**
      * @var mixed
      */
-    private $value;
+    protected $value;
 
     /**
      * @var bool
      */
-    private $isSingleton = false;
+    protected $isSingleton = false;
+
+    /**
+     * @var IDefinition[]
+     */
+    protected $aliases = [];
 
     /**
      * @param string $id
@@ -53,6 +58,20 @@ abstract class Definition implements IDefinition {
      */
     public function setValue($value) {
         $this->value = $value;
+    }
+
+    /**
+     * @return IDefinition[]
+     */
+    public function getAliases() {
+        return $this->aliases;
+    }
+
+    /**
+     * @param IDefinition $alias
+     */
+    public function addAlias(IDefinition $alias) {
+        $this->aliases[] = $alias;
     }
 
     /**

@@ -2,10 +2,13 @@
 
 namespace Weew\Container;
 
+use Weew\Container\Definitions\AliasDefinition;
 use Weew\Container\Definitions\ClassDefinition;
 use Weew\Container\Definitions\InterfaceDefinition;
 use Weew\Container\Definitions\ValueDefinition;
 use Weew\Container\Definitions\WildcardDefinition;
+use Weew\Container\Exceptions\MissingDefinitionIdentifierException;
+use Weew\Container\Exceptions\MissingDefinitionValueException;
 
 class Registry {
     /**
@@ -20,14 +23,30 @@ class Registry {
      * @return IDefinition
      */
     public function createDefinition($id, $value = null) {
-        $args = func_get_args();
+        list($id, $value) = $this->getIdAndValueFromCreateDefinitionArgs(
+            func_get_args(), $id, $value
+        );
 
+        $definition = $this->delegateDefinitionCreation($id, $value);
+        $this->addDefinition($definition);
+
+        return $definition;
+    }
+
+    /**
+     * @param array $args
+     * @param $id
+     * @param $value
+     *
+     * @return array
+     */
+    protected function getIdAndValueFromCreateDefinitionArgs(array $args, $id, $value) {
         if (count($args) > 2) {
             array_shift($args);
             $value = $args;
         }
 
-        if ($value === null) {
+        if ( ! is_array($id) && $value === null) {
             $value = $id;
 
             if (is_object($id)) {
@@ -35,7 +54,21 @@ class Registry {
             }
         }
 
-        if ($this->isRegexPattern($id)) {
+        return [$id, $value];
+    }
+
+    /**
+     * @param $id
+     * @param $value
+     *
+     * @return IDefinition
+     * @throws MissingDefinitionIdentifierException
+     * @throws MissingDefinitionValueException
+     */
+    protected function delegateDefinitionCreation($id, $value) {
+        if (is_array($id)) {
+            $definition = $this->createDefinitionWithAliases($id, $value);
+        } else if ($this->isRegexPattern($id)) {
             $definition = new WildcardDefinition($id, $value);
         } else if (class_exists($id)) {
             $definition = new ClassDefinition($id, $value);
@@ -45,8 +78,6 @@ class Registry {
             $definition = new ValueDefinition($id, $value);
         }
 
-        $this->addDefinition($definition);
-
         return $definition;
     }
 
@@ -55,25 +86,69 @@ class Registry {
      *
      * @return bool
      */
-    public function has($id) {
+    public function hasDefinition($id) {
         return $this->getDefinition($id) !== null;
     }
 
     /**
      * @param $id
      */
-    public function remove($id) {
+    public function removeDefinition($id) {
         $index = $this->getDefinitionIndex($id);
 
         if ($index !== null) {
             $definition = $this->definitions[$index];
 
-            if ( ! $definition instanceof WildcardDefinition) {
+            if ($definition instanceof IDefinition &&
+                ! $definition instanceof WildcardDefinition) {
                 array_remove($this->definitions, $index);
             }
         }
     }
 
+    /**
+     * @param array $ids
+     * @param $value
+     *
+     * @return null|IDefinition
+     * @throws MissingDefinitionIdentifierException
+     * @throws MissingDefinitionValueException
+     */
+    protected function createDefinitionWithAliases(array $ids, $value) {
+        if ($value == null) {
+            throw new MissingDefinitionValueException(
+                s('Trying to register a class with alias without a value. Received %s.', json_encode($ids))
+            );
+        } else if (count($ids) == 0) {
+            throw new MissingDefinitionIdentifierException(
+                'Trying to create a definition without an identifier.'
+            );
+        }
+
+        $definition = null;
+
+        foreach ($ids as $id) {
+            if ( ! $definition instanceof IDefinition) {
+                $definition = $this->createDefinition($id, $value);
+            } else {
+                $alias = $this->createAliasDefinition($definition, $id);
+                $definition->addAlias($alias);
+                $this->addDefinition($alias);
+            }
+        }
+
+        return $definition;
+    }
+
+    /**
+     * @param IDefinition $definition
+     * @param $id
+     *
+     * @return AliasDefinition
+     */
+    protected function createAliasDefinition(IDefinition $definition, $id) {
+        return new AliasDefinition($id, $definition);
+    }
 
     /**
      * @param $id
@@ -87,6 +162,10 @@ class Registry {
                     return $definition;
                 }
             } else if ($definition->getId() == $id) {
+                if ($definition instanceof AliasDefinition) {
+                    return $definition->getValue();
+                }
+
                 return $definition;
             }
         }
@@ -113,7 +192,7 @@ class Registry {
      * @param IDefinition $definition
      */
     public function addDefinition(IDefinition $definition) {
-        $this->remove($definition->getId());
+        $this->removeDefinition($definition->getId());
         array_unshift($this->definitions, $definition);
     }
 

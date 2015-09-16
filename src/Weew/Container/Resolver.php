@@ -66,8 +66,6 @@ class Resolver {
      * @throws TypeMismatchException
      */
     public function resolveDefinition(IDefinition $definition, $id, array $args = []) {
-        $value = null;
-
         if ($definition instanceof WildcardDefinition) {
             $value = $this->getWildcard($definition, $id, $args);
         } else if ($definition instanceof InterfaceDefinition) {
@@ -120,16 +118,7 @@ class Resolver {
     public function getInterface(InterfaceDefinition $definition, array $args = []) {
         $abstract = $definition->getValue();
         $interface = $definition->getId();
-        $instance = null;
-
-        if (is_callable($abstract)) {
-            $instance = $this->container->call($abstract, $args);
-        } else if (is_object($abstract)) {
-            $instance = $abstract;
-        } else if (class_exists($abstract)) {
-            $instance = $this->getClass(new ClassDefinition($abstract, null), $args);
-        }
-
+        $instance = $this->resolveAbstract($abstract, $args);
         $this->matchClassType($interface, $instance);
 
         return $instance;
@@ -145,10 +134,19 @@ class Resolver {
      */
     public function getWildcard(IDefinition $definition, $id, $args) {
         $abstract = $definition->getValue();
-        $instance = null;
-
         $args['abstract'] = $id;
+        $instance = $this->resolveAbstract($abstract, $args);
+        $this->matchClassType($id, $instance);
 
+        return $instance;
+    }
+
+    /**
+     * @param $abstract
+     *
+     * @return mixed
+     */
+    protected function resolveAbstract($abstract, array $args) {
         if (is_callable($abstract)) {
             $instance = $this->container->call($abstract, $args);
         } else if (is_object($abstract)) {
@@ -156,8 +154,6 @@ class Resolver {
         } else if (class_exists($abstract)) {
             $instance = $this->getClass(new ClassDefinition($abstract, null), $args);
         }
-
-        $this->matchClassType($id, $instance);
 
         return $instance;
     }

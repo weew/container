@@ -16,6 +16,7 @@
 - [Functions and methods](#functions-and-methods)
 - [Singletons](#singletons)
 - [Wildcards](#wildcards)
+- [Aliases](#aliases)
 - [Additional methods](#additional-methods)
 
 ## Installation
@@ -334,7 +335,7 @@ $container->get(MyRepository::class);
 $container->get(YourRepository::class);
 ```
 
-As you see here, the actual class name `MyRepository` was passed to the custom factory as the `$abstract` parameter. From there, we call the `RepositoryFactory` and tell it to create us a new instance of `MyRepository`. Afterwards the same factory can be used to create an instance of `YourRepository`. 
+As you see here, the actual class name `MyRepository` was passed to the custom factory as the `$abstract` parameter. From there, we call the `RepositoryFactory` and tell it to create us a new instance of `MyRepository`. Afterwards the same factory can be used to create an instance of `YourRepository`.
 
 Telling the container that all instances produced within this factory should be singletons is very simple:
 
@@ -352,6 +353,22 @@ Wildcards can also be used in combination of class names and instances. But I fi
 $container->set('/Repository$/', EntityRepository::class);
 $container->set('/Repository$/', $instance);
 ```
+
+#### Aliases
+
+If you need to create an alias for a definition, for example when you want to provide a factory for a class as well as for it's interface, and don't want to do it twice for each one, you could create a definition with an alias (or two, or ten). Just provide an array of identifiers. The first element in the array is considered as "the id" and the others are aliases.
+
+```php
+$container->set([MyImplementation::class, IImplementation::class], function() {
+    return new MyImplementation('foo');
+});
+
+// both calls will return a value from the same factory
+$container->get(MyImplementation::class);
+$container->get(IImplementation::class);
+```
+
+The same would work with singletons, primitive values and so on.
 
 #### Additional methods
 

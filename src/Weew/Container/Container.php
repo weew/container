@@ -5,6 +5,8 @@ namespace Weew\Container;
 use Weew\Container\Definitions\ValueDefinition;
 use Weew\Container\Exceptions\ImplementationNotFoundException;
 use Weew\Container\Exceptions\InvalidCallableFormatException;
+use Weew\Container\Exceptions\MissingDefinitionIdentifierException;
+use Weew\Container\Exceptions\MissingDefinitionValueException;
 use Weew\Container\Exceptions\TypeMismatchException;
 use Weew\Container\Exceptions\UnresolveableArgumentException;
 use Weew\Container\Exceptions\ValueNotFoundException;
@@ -68,7 +70,11 @@ class Container implements IContainer {
      * @return IDefinition
      */
     public function set($id, $value = null) {
-        return call_user_func_array([$this->registry, 'createDefinition'], func_get_args());
+        $args = func_get_args();
+
+        return $this->rethrowExceptions(function() use ($args) {
+            return call_user_func_array([$this->registry, 'createDefinition'], $args);
+        });
     }
 
     /**
@@ -77,14 +83,14 @@ class Container implements IContainer {
      * @return bool
      */
     public function has($id) {
-        return $this->registry->has($id);
+        return $this->registry->hasDefinition($id);
     }
 
     /**
      * @param string $id
      */
     public function remove($id) {
-        $this->registry->remove($id);
+        $this->registry->removeDefinition($id);
     }
 
     /**
@@ -171,6 +177,10 @@ class Container implements IContainer {
             throw new ValueNotFoundException($ex->getMessage());
         } catch (InvalidCallableFormatException $ex) {
             throw new InvalidCallableFormatException($ex->getMessage());
+        } catch (MissingDefinitionIdentifierException $ex) {
+            throw new MissingDefinitionIdentifierException($ex->getMessage());
+        } catch (MissingDefinitionValueException $ex) {
+            throw new MissingDefinitionValueException($ex->getMessage());
         }
     }
 
@@ -183,6 +193,10 @@ class Container implements IContainer {
         if ($definition->isSingleton() && ! $definition instanceof ValueDefinition) {
             $newDefinition = new ValueDefinition($id, $value);
             $this->registry->addDefinition($newDefinition);
+
+            foreach ($definition->getAliases() as $alias) {
+                $alias->setValue($newDefinition);
+            }
         }
     }
 
@@ -211,7 +225,6 @@ class Container implements IContainer {
      * Put current container instance in the container.
      */
     protected function shareContainerInstance() {
-        $this->set(IContainer::class, $this);
-        $this->set(static::class, $this);
+        $this->set([IContainer::class, static::class], $this);
     }
 }
