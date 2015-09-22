@@ -23,9 +23,7 @@
 
 `composer require weew/php-container`
 
-## Usage
-
-### Creating a container
+## Creating a container
 
 The container has no additional dependencies, so a simple instatiation will do the trick.
 
@@ -33,7 +31,7 @@ The container has no additional dependencies, so a simple instatiation will do t
 $container = new Container();
 ```
 
-### Primitive data
+## Primitive data
 
 Storing any type of data:
 
@@ -44,7 +42,7 @@ $container->set('foo', 'bar');
 $container->get('foo');
 ```
 
-### Classes
+## Classes
 
 Retrieving classes:
 
@@ -92,7 +90,7 @@ $container->set(new Foo());
 $container->get(Foo::class);
 ```
 
-### Factories
+## Factories
 
 Working with factories:
 
@@ -144,7 +142,7 @@ $container->set(Foo::class, [MyFactoryClass::class, 'staticFactoryMethod']);
 ```
 All facotires benefit from dependency injection. Additionaly, if you let the container instantiate your factory, it will be resolved trough the container too.
 
-### Interfaces
+## Interfaces
 
 Resolving interfaces:
 
@@ -200,7 +198,7 @@ $container->set(IFoo::class, Foo::class);
 $container->get(Bar::class);
 ```
 
-### Functions and methods
+## Functions and methods
 
 Functions can get resolved by the container:
 
@@ -266,7 +264,7 @@ $container->call([$className, $method], $args);
 $container->call([$className, $staticMethod], $args);
 ```
 
-### Singletons
+## Singletons
 
 Container values can be defined as singletons. A singleton definition will return the same value over and over again. Here is an example of a singleton interface definition:
 
@@ -305,7 +303,7 @@ $container->set(Foo::class, new Foo())->singleton();
 $container->set(Foo::class, new Foo());
 ```
 
-### Wildcards
+## Wildcards
 
 This one might be especially useful when working with factories. Lets take Doctrine for example. You can not simply instantiate a repository by yourself. But still, it would be great if you could have them resolved by the container. Unfortunately, this will throw an error, since the repository requires a special parameter that can and should not be resolved by the container:
 
@@ -354,7 +352,7 @@ $container->set('/Repository$/', EntityRepository::class);
 $container->set('/Repository$/', $instance);
 ```
 
-### Aliases
+## Aliases
 
 If you need to create an alias for a definition, for example when you want to provide a factory for a class as well as for it's interface, and don't want to do it twice for each one, you could create a definition with an alias (or two, or ten). Just provide an array of identifiers. The first element in the array is considered as "the id" and the others are aliases.
 
@@ -370,7 +368,7 @@ $container->get(IImplementation::class);
 
 The same would work with singletons, primitive values and so on.
 
-### Additional methods
+## Additional methods
 
 Check if the container has a value:
 
