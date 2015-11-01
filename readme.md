@@ -1,9 +1,11 @@
 # Dependency injection container
 
-[![Build Status](https://travis-ci.org/weew/php-container.svg?branch=master)](https://travis-ci.org/weew/php-container)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/weew/php-container/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/weew/php-container/?branch=master)
-[![Coverage Status](https://coveralls.io/repos/weew/php-container/badge.svg?branch=master&service=github)](https://coveralls.io/github/weew/php-container?branch=master)
-[![License](https://poser.pugx.org/weew/php-container/license)](https://packagist.org/packages/weew/php-container)
+[![Build Status](https://img.shields.io/travis/weew/php-container.svg)](https://travis-ci.org/weew/php-container)
+[![Code Quality](https://img.shields.io/scrutinizer/g/weew/php-container.svg)](https://scrutinizer-ci.com/g/weew/php-container)
+[![Test Coverage](https://img.shields.io/coveralls/weew/php-container.svg)](https://coveralls.io/github/weew/php-container)
+[![Dependencies](https://img.shields.io/versioneye/d/php/weew:php-container.svg)](https://versioneye.com/php/weew:php-container)
+[![Version](https://img.shields.io/packagist/v/weew/php-container.svg)](https://packagist.org/packages/weew/php-container)
+[![Licence](https://img.shields.io/packagist/l/weew/php-container.svg)](https://packagist.org/packages/weew/php-container)
 
 ## Table of contents
 
@@ -25,7 +27,7 @@
 
 ## Creating a container
 
-The container has no additional dependencies, so a simple instatiation will do the trick.
+The container has no additional dependencies, so a simple instantiation will do the trick.
 
 ```php
 $container = new Container();
