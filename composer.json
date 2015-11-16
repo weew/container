@@ -19,8 +19,8 @@
         }
     },
     "require": {
-        "weew/php-helpers-array": "0.*",
-        "weew/php-helpers-string": "0.*"
+        "weew/php-helpers-array": "^1.0.0",
+        "weew/php-helpers-string": "^1.0.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^4.7",
