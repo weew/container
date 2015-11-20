@@ -21,7 +21,11 @@ class Reflector {
      * @return object
      * @throws InterfaceIsNotInstantiableException
      */
-    public function resolveClass(IContainer $container, $className, array $args = []) {
+    public function resolveClass(
+        IContainer $container,
+        $className,
+        array $args = []
+    ) {
         return $this->resolveConstructor($container, $className, $args);
     }
 
@@ -34,7 +38,11 @@ class Reflector {
      * @throws Exception
      * @throws UnresolveableArgumentException
      */
-    protected function resolveConstructor(IContainer $container, $className, array $args = []) {
+    protected function resolveConstructor(
+        IContainer $container,
+        $className,
+        array $args = []
+    ) {
         $class = new ReflectionClass($className);
         $constructor = $class->getConstructor();
 
@@ -57,7 +65,11 @@ class Reflector {
      * @throws Exception
      * @throws UnresolveableArgumentException
      */
-    public function resolveMethod(IContainer $container, $instance, $methodName, array $args = []) {
+    public function resolveMethod(
+        IContainer $container,
+        $instance, $methodName,
+        array $args = []
+    ) {
         $class = new ReflectionClass($instance);
         $method = $class->getMethod($methodName);
         $arguments = $this->resolveMethodArguments($container, $class, $method, $args);
@@ -108,7 +120,11 @@ class Reflector {
      * @throws Exception
      * @throws UnresolveableArgumentException
      */
-    public function resolveCallable(IContainer $container, $callable, array $args = []) {
+    public function resolveCallable(
+        IContainer $container,
+        $callable,
+        array $args = []
+    ) {
         if (is_string($callable) && function_exists($callable) || is_object($callable)) {
             return $this->resolveFunction($container, $callable, $args);
         } else if (is_array($callable) && is_callable($callable)) {
@@ -127,7 +143,11 @@ class Reflector {
      * @throws Exception
      * @throws UnresolveableArgumentException
      */
-    public function resolveFunction(IContainer $container, $functionName, array $args = []) {
+    public function resolveFunction(
+        IContainer $container,
+        $functionName,
+        array $args = []
+    ) {
         $function = new ReflectionFunction($functionName);
 
         try {
@@ -152,7 +172,11 @@ class Reflector {
      * @throws Exception
      * @throws UnresolveableArgumentException
      */
-    protected function buildArgumentsFromParameters(IContainer $container, array $parameters, array $args) {
+    protected function buildArgumentsFromParameters(
+        IContainer $container,
+        array $parameters,
+        array $args
+    ) {
         $arguments = [];
 
         foreach ($parameters as $index => $parameter) {
@@ -177,7 +201,11 @@ class Reflector {
      * @return mixed
      * @throws Exception
      */
-    protected function getParameterValue(IContainer $container, ReflectionParameter $parameter, array $args) {
+    protected function getParameterValue(
+        IContainer $container,
+        ReflectionParameter $parameter,
+        array $args
+    ) {
         $parameterName = $parameter->getName();
 
         if (array_has($args, $parameterName)) {
@@ -205,7 +233,10 @@ class Reflector {
      * @throws Exception
      * @throws ValueNotFoundException
      */
-    protected function getParameterFromContainer(IContainer $container, ReflectionParameter $parameter) {
+    protected function getParameterFromContainer(
+        IContainer $container,
+        ReflectionParameter $parameter
+    ) {
         try {
             return $container->get($parameter->getClass()->getName());
         } catch (Exception $ex) {

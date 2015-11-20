@@ -59,4 +59,11 @@ class ContainerInterfaceTest extends PHPUnit_Framework_TestCase {
         $value = $container->get(IImplementation::class);
         $this->assertTrue($value === $instance);
     }
+
+    public function test_get_interface_with_interface() {
+        $container = new Container();
+        $container->set(IImplementation::class, IImplementation::class);
+        $this->setExpectedException(TypeMismatchException::class);
+        $container->get(IImplementation::class);
+    }
 }

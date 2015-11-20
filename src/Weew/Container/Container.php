@@ -27,6 +27,9 @@ class Container implements IContainer {
      */
     protected $resolver;
 
+    /**
+     * Container constructor.
+     */
     public function __construct() {
         $this->reflector = $this->createReflector();
         $this->registry = $this->createRegistry();
