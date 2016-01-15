@@ -20,6 +20,8 @@
 - [Wildcards](#wildcards)
 - [Aliases](#aliases)
 - [Additional methods](#additional-methods)
+- [Extensions](#extensions)
+    - [Doctrine integration](#doctrine-integration)
 
 ## Installation
 
@@ -390,3 +392,11 @@ $container->remove('foo');
 // will return false
 $container->has('foo');
 ```
+
+## Extensions
+
+There are additional extension available to make the container even more powerful.
+
+### Doctrine integration
+
+The [weew/php-container-doctrine-integration](https://github.com/weew/php-container-doctrine-integration) package makes doctrine repositories injectable.
