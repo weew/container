@@ -11,6 +11,14 @@ interface IContainer {
     function get($id, array $args = []);
 
     /**
+     * @param $id
+     * @param array $args
+     *
+     * @return mixed
+     */
+    function instantiate($id, array $args = []);
+
+    /**
      * @param string $id
      * @param $value
      *

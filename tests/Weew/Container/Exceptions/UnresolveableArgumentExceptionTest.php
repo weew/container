@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Weew\Container;
+namespace Tests\Weew\Container\Exceptions;
 
 use PHPUnit_Framework_TestCase;
 use Weew\Container\Exceptions\UnresolveableArgumentException;

@@ -3,6 +3,7 @@
 namespace Weew\Container;
 
 use Weew\Container\Definitions\ValueDefinition;
+use Weew\Container\Exceptions\ClassNotFoundException;
 use Weew\Container\Exceptions\ImplementationNotFoundException;
 use Weew\Container\Exceptions\InvalidCallableFormatException;
 use Weew\Container\Exceptions\MissingDefinitionIdentifierException;
@@ -63,6 +64,27 @@ class Container implements IContainer {
             }
 
             return $value;
+        });
+    }
+
+    /**
+     * @param $id
+     * @param array $args
+     *
+     * @return mixed
+     * @throws ClassNotFoundException
+     * @throws ImplementationNotFoundException
+     * @throws ValueNotFoundException
+     */
+    public function instantiate($id, array $args = []) {
+        return $this->rethrowExceptions(function() use ($id, $args) {
+            if ( ! class_exists($id)) {
+                throw new ClassNotFoundException(s(
+                    'Class "%s" not found.', $id
+                ));
+            }
+
+            return $this->resolver->resolveWithoutDefinition($id, $args);
         });
     }
 
@@ -161,11 +183,14 @@ class Container implements IContainer {
      * @param callable $callable
      *
      * @return mixed
+     * @throws ClassNotFoundException
      * @throws ImplementationNotFoundException
+     * @throws InvalidCallableFormatException
+     * @throws MissingDefinitionIdentifierException
+     * @throws MissingDefinitionValueException
      * @throws TypeMismatchException
      * @throws UnresolveableArgumentException
      * @throws ValueNotFoundException
-     * @throws \Exception
      */
     protected function rethrowExceptions(callable $callable) {
         try {
@@ -184,6 +209,8 @@ class Container implements IContainer {
             throw new MissingDefinitionIdentifierException($ex->getMessage());
         } catch (MissingDefinitionValueException $ex) {
             throw new MissingDefinitionValueException($ex->getMessage());
+        } catch (ClassNotFoundException $ex) {
+            throw new ClassNotFoundException($ex->getMessage());
         }
     }
 
