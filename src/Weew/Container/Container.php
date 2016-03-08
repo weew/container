@@ -30,12 +30,15 @@ class Container implements IContainer {
 
     /**
      * Container constructor.
+     *
+     * @param bool $strictMode
      */
-    public function __construct() {
+    public function __construct($strictMode = true) {
         $this->reflector = $this->createReflector();
         $this->registry = $this->createRegistry();
         $this->resolver = $this->createResolver();
 
+        $this->setStrictMode($strictMode);
         $this->shareContainerInstance();
     }
 
@@ -174,6 +177,20 @@ class Container implements IContainer {
             return $this->reflector
                 ->resolveMethod($this, $class, $method, $args);
         });
+    }
+
+    /**
+     * @param bool $strictMode
+     */
+    public function setStrictMode($strictMode) {
+        $this->resolver->setStrictMode($strictMode);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isInStrictMode() {
+        return $this->resolver->isInStrictMode();
     }
 
     /**

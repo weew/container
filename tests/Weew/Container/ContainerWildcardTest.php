@@ -66,6 +66,15 @@ class ContainerWildcardTest extends PHPUnit_Framework_TestCase {
         $container->get(IImplementation::class);
     }
 
+    public function test_get_interface_with_wildcard_with_invalid_value_without_strict_mode() {
+        $container = new Container(false);
+        $container->set('/Implementation$/', function() {
+            return new SimpleClass();
+        });
+
+        $this->assertTrue($container->get(IImplementation::class) instanceof SimpleClass);
+    }
+
     public function test_get_class_with_wildcard() {
         $container = new Container();
         $container->set('/Implementation$/', function() {
@@ -123,6 +132,15 @@ class ContainerWildcardTest extends PHPUnit_Framework_TestCase {
 
         $this->setExpectedException(TypeMismatchException::class);
         $container->get(BaseImplementation::class);
+    }
+
+    public function test_get_class_with_wildcard_with_invalid_value_without_strict_mode() {
+        $container = new Container(false);
+        $container->set('#Implementation$#', function() {
+            return new SimpleClass();
+        });
+
+        $this->assertTrue($container->get(BaseImplementation::class) instanceof SimpleClass);
     }
 
     public function test_get_with_wildcard_properly_passes_the_actual_id() {

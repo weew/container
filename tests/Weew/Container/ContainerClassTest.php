@@ -34,6 +34,12 @@ class ContainerClassTest extends PHPUnit_Framework_TestCase {
         $container->get(SimpleClass::class);
     }
 
+    public function test_get_class_with_factory_that_returns_an_invalid_value_without_strict_mode() {
+        $container = new Container(false);
+        $container->set(SimpleClass::class, function() {return 1;});
+        $this->assertEquals(1, $container->get(SimpleClass::class));
+    }
+
     public function test_get_class_with_factory() {
         $container = new Container();
         $container->set(SimpleClass::class, function() {return new SimpleClass();});
@@ -46,6 +52,13 @@ class ContainerClassTest extends PHPUnit_Framework_TestCase {
         $container->set(SimpleClass::class, new SimpleImplementation());
         $this->setExpectedException(TypeMismatchException::class);
         $container->get(SimpleClass::class);
+    }
+
+    public function test_get_class_with_invalid_instance_without_strict_mode() {
+        $container = new Container(false);
+        $implementation = new SimpleImplementation();
+        $container->set(SimpleClass::class, $implementation);
+        $this->assertTrue($container->get(SimpleClass::class) === $implementation);
     }
 
     public function test_get_class_with_instance() {

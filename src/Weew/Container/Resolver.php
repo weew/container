@@ -21,6 +21,11 @@ class Resolver {
     protected $reflector;
 
     /**
+     * @var bool
+     */
+    protected $strictMode = true;
+
+    /**
      * @param IContainer $container
      * @param Reflector $reflector
      */
@@ -142,6 +147,20 @@ class Resolver {
     }
 
     /**
+     * @param bool $strictMode
+     */
+    public function setStrictMode($strictMode) {
+        $this->strictMode = $strictMode;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isInStrictMode() {
+        return $this->strictMode;
+    }
+
+    /**
      * @param $abstract
      * @param array $args
      *
@@ -166,6 +185,10 @@ class Resolver {
      * @throws TypeMismatchException
      */
     protected function matchClassType($class, $instance) {
+        if ( ! $this->isInStrictMode()) {
+            return;
+        }
+
         if ( ! $instance instanceof $class) {
             throw new TypeMismatchException(
                 s(

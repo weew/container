@@ -24,6 +24,12 @@ class ContainerInterfaceTest extends PHPUnit_Framework_TestCase {
         $container->get(IImplementation::class);
     }
 
+    public function test_get_interface_with_invalid_definition_without_strict_mode() {
+        $container = new Container(false);
+        $container->set(IImplementation::class, SimpleClass::class);
+        $this->assertTrue($container->get(IImplementation::class) instanceof SimpleClass);
+    }
+
     public function test_get_interface() {
         $container = new Container();
         $container->set(IImplementation::class, SimpleImplementation::class);
@@ -36,6 +42,12 @@ class ContainerInterfaceTest extends PHPUnit_Framework_TestCase {
         $container->set(IImplementation::class, function() {return 1;});
         $this->setExpectedException(TypeMismatchException::class);
         $container->get(IImplementation::class);
+    }
+
+    public function test_get_interface_with_factory_that_returns_an_invalid_value_without_strict_mode() {
+        $container = new Container(false);
+        $container->set(IImplementation::class, function() {return 1;});
+        $this->assertEquals(1, $container->get(IImplementation::class));
     }
 
     public function test_get_interface_with_factory() {
@@ -52,6 +64,13 @@ class ContainerInterfaceTest extends PHPUnit_Framework_TestCase {
         $container->get(IImplementation::class);
     }
 
+    public function test_get_interface_with_invalid_instance_without_strict_mode() {
+        $container = new Container(false);
+        $instance = new SimpleClass();
+        $container->set(IImplementation::class, $instance);
+        $this->assertTrue($container->get(IImplementation::class) === $instance);
+    }
+
     public function test_get_interface_with_instance() {
         $container = new Container();
         $instance = new SimpleImplementation();
@@ -64,6 +83,13 @@ class ContainerInterfaceTest extends PHPUnit_Framework_TestCase {
         $container = new Container();
         $container->set(IImplementation::class, IImplementation::class);
         $this->setExpectedException(TypeMismatchException::class);
+        $container->get(IImplementation::class);
+    }
+
+    public function test_get_interface_with_interface_without_strict_mode() {
+        $container = new Container(false);
+        $container->set(IImplementation::class, IImplementation::class);
+        $this->setExpectedException(ImplementationNotFoundException::class);
         $container->get(IImplementation::class);
     }
 }

@@ -36,4 +36,16 @@ class ContainerTest extends PHPUnit_Framework_TestCase {
         $container = new Container();
         $container->remove('foo');
     }
+
+    public function test_is_in_strict_mode_by_default() {
+        $container = new Container();
+        $this->assertTrue($container->isInStrictMode());
+    }
+
+    public function test_container_can_toggle_strict_mode() {
+        $container = new Container(false);
+        $this->assertFalse($container->isInStrictMode());
+        $container->setStrictMode(true);
+        $this->assertTrue($container->isInStrictMode());
+    }
 }
