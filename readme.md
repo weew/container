@@ -1,11 +1,11 @@
 # Dependency injection container
 
-[![Build Status](https://img.shields.io/travis/weew/php-container.svg)](https://travis-ci.org/weew/php-container)
-[![Code Quality](https://img.shields.io/scrutinizer/g/weew/php-container.svg)](https://scrutinizer-ci.com/g/weew/php-container)
-[![Test Coverage](https://img.shields.io/coveralls/weew/php-container.svg)](https://coveralls.io/github/weew/php-container)
-[![Dependencies](https://img.shields.io/versioneye/d/php/weew:php-container.svg)](https://versioneye.com/php/weew:php-container)
-[![Version](https://img.shields.io/packagist/v/weew/php-container.svg)](https://packagist.org/packages/weew/php-container)
-[![Licence](https://img.shields.io/packagist/l/weew/php-container.svg)](https://packagist.org/packages/weew/php-container)
+[![Build Status](https://img.shields.io/travis/weew/container.svg)](https://travis-ci.org/weew/container)
+[![Code Quality](https://img.shields.io/scrutinizer/g/weew/container.svg)](https://scrutinizer-ci.com/g/weew/container)
+[![Test Coverage](https://img.shields.io/coveralls/weew/container.svg)](https://coveralls.io/github/weew/container)
+[![Dependencies](https://img.shields.io/versioneye/d/php/weew:container.svg)](https://versioneye.com/php/weew:container)
+[![Version](https://img.shields.io/packagist/v/weew/container.svg)](https://packagist.org/packages/weew/container)
+[![Licence](https://img.shields.io/packagist/l/weew/container.svg)](https://packagist.org/packages/weew/container)
 
 ## Table of contents
 
@@ -25,7 +25,7 @@
 
 ## Installation
 
-`composer require weew/php-container`
+`composer require weew/container`
 
 ## Creating a container
 
@@ -399,4 +399,4 @@ There are additional extension available to make the container even more powerfu
 
 ### Doctrine integration
 
-The [weew/php-container-doctrine-integration](https://github.com/weew/php-container-doctrine-integration) package makes doctrine repositories injectable.
+The [weew/container-doctrine-integration](https://github.com/weew/container-doctrine-integration) package makes doctrine repositories injectable.

@@ -1,5 +1,5 @@
 {
-    "name": "weew/php-container",
+    "name": "weew/container",
     "description": "Dependency injection container.",
     "license": "MIT",
     "authors": [
@@ -19,8 +19,8 @@
         }
     },
     "require": {
-        "weew/php-helpers-array": "^1.0.0",
-        "weew/php-helpers-string": "^1.0.0"
+        "weew/helpers-array": "^1.0.0",
+        "weew/helpers-string": "^1.0.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^4.7",
