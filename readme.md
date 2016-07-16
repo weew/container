@@ -3,7 +3,6 @@
 [![Build Status](https://img.shields.io/travis/weew/container.svg)](https://travis-ci.org/weew/container)
 [![Code Quality](https://img.shields.io/scrutinizer/g/weew/container.svg)](https://scrutinizer-ci.com/g/weew/container)
 [![Test Coverage](https://img.shields.io/coveralls/weew/container.svg)](https://coveralls.io/github/weew/container)
-[![Dependencies](https://img.shields.io/versioneye/d/php/weew:container.svg)](https://versioneye.com/php/weew:container)
 [![Version](https://img.shields.io/packagist/v/weew/container.svg)](https://packagist.org/packages/weew/container)
 [![Licence](https://img.shields.io/packagist/l/weew/container.svg)](https://packagist.org/packages/weew/container)
 
